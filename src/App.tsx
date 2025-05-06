@@ -1,34 +1,21 @@
-import { useState } from 'react'
+import type { FC } from 'react'
+import { useRoutes } from 'react-router'
 
-import reactLogo from './assets/react.svg'
+import { Toaster } from './components/ui/sonner'
 
-import viteLogo from '/vite.svg'
+import { cn } from '@/lib/utils.ts'
+import { ThemeProvider } from '@/providers/theme'
+import routes from '@/routes'
 
-import './App.css'
-import { Button } from '@/components/ui/button'
-
-const App = () => {
-  const [count, setCount] = useState(0)
+const App: FC = () => {
+  const element = useRoutes(routes)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <Button onClick={() => setCount((state) => state + 1)}>count is {count}</Button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-    </>
+    <ThemeProvider>
+      <div className={cn('bg-background min-h-screen w-full font-sans antialiased')}>{element}</div>
+      <Toaster />
+    </ThemeProvider>
   )
 }
+
 export default App

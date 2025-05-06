@@ -6,7 +6,6 @@ import eslintPluginReact from 'eslint-plugin-react'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginJsxA11y from 'eslint-plugin-jsx-a11y'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
-// import eslintPluginTailwind from 'eslint-plugin-tailwindcss'
 import eslintPluginQuery from '@tanstack/eslint-plugin-query'
 import eslintPluginStylistic from '@stylistic/eslint-plugin'
 
@@ -27,7 +26,6 @@ export default tseslint.config(
       react: eslintPluginReact,
       'jsx-a11y': eslintPluginJsxA11y,
       'react-hooks': eslintPluginReactHooks,
-      // tailwind: eslintPluginTailwind,
       stylistic: eslintPluginStylistic,
       '@tanstack/query': eslintPluginQuery,
     },
@@ -61,12 +59,14 @@ export default tseslint.config(
 
       // Core JavaScript rules
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-alert': 'error',
       'no-var': 'error',
       'prefer-const': 'error',
       'no-param-reassign': 'error',
       'no-shadow': 'error',
       'no-multi-spaces': 'error',
       'no-loop-func': 'error',
+      'no-tabs': 'error',
       'prefer-arrow-callback': 'error',
 
       // React specific rules
@@ -82,6 +82,7 @@ export default tseslint.config(
       ],
       'react/require-default-props': 'off',
       'react/button-has-type': 'error',
+      'react/jsx-props-no-spreading': 'warn',
 
       // TypeScript rules
       '@typescript-eslint/no-explicit-any': 'error',
@@ -101,7 +102,7 @@ export default tseslint.config(
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      'import/prefer-default-export': 'error',
+      'import/prefer-default-export': 'warn',
       'import/no-default-export': 'off',
       'import/no-cycle': 'error',
 

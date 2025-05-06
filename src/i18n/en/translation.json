@@ -1,0 +1,56 @@
+{
+  "common": {
+    "back": "Back",
+    "continue": "Continue",
+    "email": "Email",
+    "phone": "Phone",
+    "user": "User",
+    "guest": "Guest",
+    "filter": "Filter",
+    "reset": "Reset",
+    "apply": "Apply",
+    "search": "Search",
+    "display": "Display",
+    "cancel": "Cancel",
+    "save": "Save",
+    "section": "Section",
+    "next": "Next",
+    "skip": "Skip",
+    "complete": "Complete",
+    "noDataYet": "No data yet..",
+    "delete": "Delete",
+    "hide": "Hide",
+    "remove": "Remove",
+    "rename": "Rename",
+    "confirm": "Confirm",
+    "change": "Change",
+    "date": "Date",
+    "time": "Time"
+  },
+  "navigation": {
+    "home": "Home"
+  },
+  "home": {
+    "welcome": {
+      "title": "Welcome",
+      "description": "Get started with your new project",
+      "content": "This is a modern React template with TypeScript, Tailwind CSS, and shadcn/ui components."
+    },
+    "features": {
+      "title": "Features",
+      "description": "What's included",
+      "list": {
+        "typescript": "TypeScript support",
+        "tailwind": "Tailwind CSS integration",
+        "components": "shadcn/ui components",
+        "i18n": "i18n internationalization",
+        "router": "React Router setup"
+      }
+    },
+    "documentation": {
+      "title": "Documentation",
+      "description": "Learn more",
+      "content": "Check out the documentation to learn more about the features and how to use them."
+    }
+  }
+}
