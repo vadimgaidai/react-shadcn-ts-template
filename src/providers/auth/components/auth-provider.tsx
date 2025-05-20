@@ -18,7 +18,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     queryKey: [userQueryKeys.me],
     queryFn: userApi.getMe,
     enabled: Boolean(isAuthenticated),
-    staleTime: 60_000,
   })
 
   const handleLogin = async (payload: LoginPayload) => {
