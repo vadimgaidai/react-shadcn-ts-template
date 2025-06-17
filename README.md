@@ -15,9 +15,6 @@ A modern, production-grade React template leveraging TypeScript, Vite, Tailwind 
 - [Import and Module Details](#import-and-module-details)
 - [Linting and Code Style](#linting-and-code-style)
 - [Continuous Integration/Deployment](#continuous-integrationdeployment)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -184,5 +181,3 @@ pnpm format       # Format code with Prettier
 
 - **Automation**: Pre-commit hooks (Husky, lint-staged) enforce code quality locally.
 - **Recommendation**: Integrate with GitHub Actions, GitLab CI, or similar for automated testing, linting, and deployment.
-
----
