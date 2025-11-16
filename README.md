@@ -81,8 +81,16 @@ pnpm dev
 Create `.env` file:
 
 ```env
+# Application Mode
+MODE=development
+
+# Application Name
 VITE_APP_NAME=My App
+
+# API Configuration
 VITE_API_URL=http://localhost:3000
+
+# Development Tools
 VITE_ENABLE_DEVTOOLS=true
 ```
 

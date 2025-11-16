@@ -11,6 +11,5 @@ export const userQueries = {
     queryOptions({
       queryKey: userKeys.me(),
       queryFn: userApi.getMe,
-      staleTime: 1000 * 60 * 5, // 5 minutes
     }),
 }

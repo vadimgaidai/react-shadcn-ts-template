@@ -210,6 +210,12 @@ tokenStorage.clear()
 ### Environment Variables
 
 ```env
+# Application Mode
+MODE=development
+
+# Application Name
+VITE_APP_NAME=React App
+
 # API base URL
 VITE_API_URL=http://localhost:3000
 

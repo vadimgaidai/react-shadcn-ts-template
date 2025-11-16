@@ -259,13 +259,16 @@ export const useLogin = () => {
 Create `.env` file in project root:
 
 ```env
-# Application
+# Application Mode
+MODE=development
+
+# Application Name
 VITE_APP_NAME=My App
 
-# API
+# API Configuration
 VITE_API_URL=http://localhost:3000
 
-# Features
+# Development Tools
 VITE_ENABLE_DEVTOOLS=true
 ```
 
