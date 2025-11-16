@@ -1,7 +1,5 @@
 import type { Mutation, Query } from "@tanstack/react-query"
 
-import { queryClient } from "./client"
-
 import { authApi } from "@/features/auth/api/auth.api"
 import { tokenStorage } from "@/shared/lib"
 
@@ -13,7 +11,12 @@ let failedQueue: {
 }[] = []
 
 const processFailedQueue = () => {
-  failedQueue.forEach(({ query }) => {
+  failedQueue.forEach(({ query, mutation, variables }) => {
+    if (mutation) {
+      const { options } = mutation
+      mutation.setOptions(options)
+      mutation.execute(variables)
+    }
     if (query) {
       query.fetch()
     }
@@ -27,6 +30,13 @@ const refreshTokenAndRetry = async (
   mutation?: Mutation<unknown, unknown, unknown, unknown>,
   variables?: unknown
 ) => {
+  const refreshToken = tokenStorage.getRefreshToken()
+
+  if (!refreshToken) {
+    tokenStorage.clearTokens()
+    return
+  }
+
   try {
     if (!isRefreshing) {
       isRefreshing = true
@@ -43,25 +53,33 @@ const refreshTokenAndRetry = async (
     } else {
       failedQueue.push({ query, mutation, variables })
     }
-  } catch (error) {
-    console.error("Token refresh failed:", error)
+  } catch {
     tokenStorage.clearTokens()
-    queryClient.clear()
   }
 }
 
-const isUnauthorizedError = (error: unknown): boolean => {
-  return (
-    error instanceof Error &&
-    "status" in error &&
-    (error as unknown as { status?: number }).status === 401
-  )
+const errorHandler = (
+  error: unknown,
+  query?: Query<unknown, unknown, unknown>,
+  mutation?: Mutation<unknown, unknown, unknown, unknown>,
+  variables?: unknown
+) => {
+  if (error && typeof error === "object" && "response" in error) {
+    const httpError = error as { response?: { status?: number } }
+    const status = httpError.response?.status
+
+    if (status === 401) {
+      if (mutation) {
+        refreshTokenAndRetry(undefined, mutation, variables)
+      } else {
+        refreshTokenAndRetry(query)
+      }
+    }
+  }
 }
 
 export const queryErrorHandler = (error: unknown, query: Query<unknown, unknown, unknown>) => {
-  if (isUnauthorizedError(error)) {
-    refreshTokenAndRetry(query)
-  }
+  errorHandler(error, query)
 }
 
 export const mutationErrorHandler = (
@@ -70,7 +88,5 @@ export const mutationErrorHandler = (
   _context: unknown,
   mutation: Mutation<unknown, unknown, unknown, unknown>
 ) => {
-  if (isUnauthorizedError(error)) {
-    refreshTokenAndRetry(undefined, mutation, variables)
-  }
+  errorHandler(error, undefined, mutation, variables)
 }

@@ -19,18 +19,21 @@ export const tokenStorage = {
     const token = localStorage.getItem(ACCESS_TOKEN_KEY)
     const expiresAt = localStorage.getItem(ACCESS_TOKEN_EXPIRES_KEY)
 
-    if (!token || !expiresAt) return null
-
-    if (this.isAccessTokenExpired()) {
-      this.clearTokens()
+    if (!token || !expiresAt) {
       return null
     }
 
+    if (this.isAccessTokenExpired()) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY)
+      localStorage.removeItem(ACCESS_TOKEN_EXPIRES_KEY)
+      return null
+    }
     return token
   },
 
   getRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_TOKEN_KEY)
+    const token = localStorage.getItem(REFRESH_TOKEN_KEY)
+    return token
   },
 
   isAccessTokenExpired(): boolean {
