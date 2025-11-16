@@ -33,28 +33,35 @@ The authentication system provides:
 
 ## Token Storage Strategy
 
+### Token Storage
+
+- **Storage**: localStorage
+- **Purpose**: Persist authentication tokens across page refreshes
+- **Security**: Vulnerable to XSS attacks, but provides persistence
+- **Lifetime**: Persists until explicitly cleared or expired
+
 ### Access Tokens
 
-- **Storage**: Memory only
+- **Storage**: localStorage with expiration tracking
 - **Purpose**: Short-lived authentication for API requests
-- **Security**: Cannot be accessed via XSS attacks
-- **Lifetime**: Cleared on page refresh
+- **Expiration**: Automatically checked before use (60-second buffer for clock skew)
+- **Lifetime**: Cleared when expired or on logout
 
 ### Refresh Tokens
 
-- **Storage**: sessionStorage
+- **Storage**: localStorage
 - **Purpose**: Obtain new access tokens without re-login
-- **Security**: Vulnerable to XSS but cleared when tab closes
-- **Lifetime**: Survives page refreshes but cleared when tab closes
+- **Lifetime**: Persists until logout or refresh failure
 
 ### Production Recommendations
 
 For production environments, consider:
 
-- HTTP-only secure cookies for refresh tokens
+- HTTP-only secure cookies for refresh tokens (instead of localStorage)
 - CSRF protection
 - HTTPS only
 - Token rotation on each refresh
+- Consider using memory storage for access tokens in high-security scenarios
 
 ## Token Refresh Flow
 
@@ -91,9 +98,10 @@ Multiple simultaneous API calls receiving 401 responses will:
 
 ```typescript
 import { useAuth } from '@/features/auth'
+import type { LoginCredentials, RegisterCredentials } from '@/features/auth'
 
 const LoginComponent = () => {
-  const { login, logout, user, isAuthenticated } = useAuth()
+  const { login, register, logout, user, isAuthenticated, isLoading } = useAuth()
 
   const handleLogin = async (credentials: LoginCredentials) => {
     try {
@@ -101,12 +109,32 @@ const LoginComponent = () => {
       // User is now authenticated
     } catch (error) {
       // Handle login error
+      console.error('Login failed:', error)
     }
   }
 
-  const handleLogout = () => {
-    logout()
-    // User is logged out and tokens cleared
+  const handleRegister = async (credentials: RegisterCredentials) => {
+    try {
+      await register(credentials)
+      // User is registered and authenticated
+    } catch (error) {
+      // Handle registration error
+      console.error('Registration failed:', error)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      // User is logged out and tokens cleared
+    } catch (error) {
+      // Handle logout error
+      console.error('Logout failed:', error)
+    }
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -117,9 +145,14 @@ const LoginComponent = () => {
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (
-        <button onClick={() => handleLogin(credentials)}>
-          Login
-        </button>
+        <div>
+          <button onClick={() => handleLogin({ email: '', password: '' })}>
+            Login
+          </button>
+          <button onClick={() => handleRegister({ email: '', password: '', name: '' })}>
+            Register
+          </button>
+        </div>
       )}
     </div>
   )
@@ -129,11 +162,39 @@ const LoginComponent = () => {
 ### Protected Routes
 
 ```typescript
+import { useAuth } from '@/features/auth'
+import { Navigate } from 'react-router'
+import { paths } from '@/shared/config/routes'
+
+const ProtectedPage = () => {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={paths.login} replace />
+  }
+
+  return <div>Protected content</div>
+}
+```
+
+**Note:** The `ProtectedRoute` component in `src/app/routes/protected-route.tsx` provides a reusable wrapper for protected routes.
+
+### Using useRequireAuth Hook
+
+```typescript
 import { useRequireAuth } from '@/features/auth'
 
 const ProtectedPage = () => {
   // Automatically redirects to login if not authenticated
-  useRequireAuth()
+  const { isAuthenticated, isLoading } = useRequireAuth('/login')
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   return <div>Protected content</div>
 }
@@ -178,20 +239,34 @@ import { tokenStorage } from "@/shared/lib"
 // Get current access token
 const accessToken = tokenStorage.getAccessToken()
 
-// Check if user is authenticated
-const isAuthenticated = tokenStorage.isAuthenticated()
+// Get refresh token
+const refreshToken = tokenStorage.getRefreshToken()
+
+// Check if access token is expired
+const isExpired = tokenStorage.isAccessTokenExpired()
+
+// Check if user has tokens
+const hasTokens = tokenStorage.hasTokens()
+
+// Set tokens (usually called after login/register/refresh)
+tokenStorage.setTokens(accessToken, refreshToken, expiresIn)
 
 // Clear all tokens (logout)
-tokenStorage.clear()
+tokenStorage.clearTokens()
 ```
 
 ## Security Considerations
 
 ### Token Storage Security
 
-- Access tokens in memory prevent XSS theft
-- Refresh tokens in sessionStorage limit exposure
-- Never store sensitive tokens in localStorage
+- Tokens are stored in localStorage for persistence
+- Access tokens are automatically checked for expiration before use
+- 60-second buffer (TOKEN_SKEW_MS) prevents issues with clock skew
+- Tokens are cleared on logout or refresh failure
+- **Security Note**: localStorage is vulnerable to XSS attacks. For production, consider:
+  - HTTP-only cookies for refresh tokens
+  - Memory storage for access tokens in high-security scenarios
+  - Content Security Policy (CSP) headers
 
 ### Error Handling
 
@@ -199,11 +274,13 @@ tokenStorage.clear()
 - Network errors are handled gracefully
 - User session is maintained across refreshes
 
-### Clock Skew Tolerance
+### Token Expiration Handling
 
-- 60-second buffer for token expiration
-- Prevents issues with slight time differences
-- Ensures smooth user experience
+- Access tokens include expiration time (`expiresIn` in seconds)
+- Expiration is stored as timestamp in localStorage
+- 60-second buffer (`TOKEN_SKEW_MS`) prevents issues with clock skew
+- Tokens are automatically removed when expired
+- `isAccessTokenExpired()` checks expiration before token use
 
 ## Configuration
 

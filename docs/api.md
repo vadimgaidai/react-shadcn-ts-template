@@ -72,29 +72,37 @@ All API calls use TanStack Query for:
 
 ```typescript
 // src/shared/lib/react-query/client.ts
-import { QueryClient } from "@tanstack/react-query"
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
+import { mutationErrorHandler, queryErrorHandler } from "./error-handlers"
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
-        if (
-          error instanceof HTTPError &&
-          error.response.status >= 400 &&
-          error.response.status < 500
-        ) {
-          return false
+        if (error instanceof Error && "response" in error) {
+          const status = (error as { response?: { status?: number } }).response?.status
+          if (status && status >= 400 && status < 500) {
+            return false
+          }
         }
-        return failureCount < 3
+        return failureCount < 2
       },
     },
     mutations: {
       retry: false,
     },
   },
+  queryCache: new QueryCache({
+    onError: queryErrorHandler,
+  }),
+  mutationCache: new MutationCache({
+    onError: mutationErrorHandler,
+  }),
 })
 ```
 
@@ -129,40 +137,71 @@ src/entities/[entity]/
 
 ```typescript
 // src/features/auth/api/auth.api.ts
-import { api } from "@/shared/lib/http"
-
-export interface LoginCredentials {
-  email: string
-  password: string
-}
-
-export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
-}
+import ky from "ky"
+import type { LoginCredentials, RegisterCredentials, AuthTokens } from "../model/types"
+import { env } from "@/shared/config"
+import { tokenStorage } from "@/shared/lib"
 
 export const authApi = {
-  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    return api.post("auth/login", { json: credentials }).json()
+  login: async (credentials: LoginCredentials): Promise<AuthTokens> => {
+    return ky
+      .post(`${env.VITE_API_URL}/api/auth/login`, {
+        json: credentials,
+      })
+      .json<AuthTokens>()
   },
 
-  refresh: async (): Promise<AuthResponse> => {
-    return api.post("auth/refresh").json()
+  register: async (credentials: RegisterCredentials): Promise<AuthTokens> => {
+    return ky
+      .post(`${env.VITE_API_URL}/api/auth/register`, {
+        json: credentials,
+      })
+      .json<AuthTokens>()
+  },
+
+  refresh: async (): Promise<AuthTokens> => {
+    const refreshToken = tokenStorage.getRefreshToken()
+
+    if (!refreshToken) {
+      throw new Error("No refresh token available")
+    }
+
+    return ky
+      .post(`${env.VITE_API_URL}/api/auth/refresh`, {
+        json: { refreshToken },
+      })
+      .json<AuthTokens>()
   },
 
   logout: async (): Promise<void> => {
-    return api.post("auth/logout").json()
+    const refreshToken = tokenStorage.getRefreshToken()
+
+    if (refreshToken) {
+      try {
+        await ky.post(`${env.VITE_API_URL}/api/auth/logout`, {
+          json: { refreshToken },
+        })
+      } catch (error) {
+        console.warn("Logout request failed:", error)
+      }
+    }
   },
 }
 ```
 
-### Authentication Queries
+**Note:** Authentication API uses direct `ky` calls instead of `httpClient` because:
+
+- Login/register don't require authentication tokens
+- Refresh token is sent in the request body, not as a header
+- Logout should work even if the request fails
+
+### Authentication Mutations
 
 ```typescript
-// src/features/auth/api/auth.queries.ts
+// src/features/auth/api/auth.mutations.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { authApi } from "./auth.api"
+import { userKeys } from "@/entities/user"
 import { tokenStorage } from "@/shared/lib/storage"
 
 export const useLoginMutation = () => {
@@ -170,9 +209,24 @@ export const useLoginMutation = () => {
 
   return useMutation({
     mutationFn: authApi.login,
-    onSuccess: (data) => {
-      tokenStorage.setTokens(data)
-      queryClient.invalidateQueries({ queryKey: ["user"] })
+    onSuccess: (tokens) => {
+      tokenStorage.setTokens(tokens.accessToken, tokens.refreshToken, tokens.expiresIn)
+      queryClient.invalidateQueries({ queryKey: userKeys.me() })
+    },
+    onError: (error) => {
+      console.error("Login failed:", error)
+    },
+  })
+}
+
+export const useRegisterMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: authApi.register,
+    onSuccess: (tokens) => {
+      tokenStorage.setTokens(tokens.accessToken, tokens.refreshToken, tokens.expiresIn)
+      queryClient.invalidateQueries({ queryKey: userKeys.me() })
     },
   })
 }
@@ -183,7 +237,29 @@ export const useLogoutMutation = () => {
   return useMutation({
     mutationFn: authApi.logout,
     onSuccess: () => {
-      tokenStorage.clear()
+      tokenStorage.clearTokens()
+      queryClient.clear()
+      queryClient.setQueryData(userKeys.me(), null)
+    },
+    onError: (error) => {
+      console.error("Logout failed:", error)
+      tokenStorage.clearTokens()
+      queryClient.clear()
+    },
+  })
+}
+
+export const useRefreshMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: authApi.refresh,
+    onSuccess: (tokens) => {
+      tokenStorage.setTokens(tokens.accessToken, tokens.refreshToken, tokens.expiresIn)
+      queryClient.invalidateQueries({ queryKey: userKeys.me() })
+    },
+    onError: () => {
+      tokenStorage.clearTokens()
       queryClient.clear()
     },
   })
@@ -194,21 +270,12 @@ export const useLogoutMutation = () => {
 
 ```typescript
 // src/entities/user/api/user.api.ts
-import { api } from "@/shared/lib/http"
-
-export interface User {
-  id: string
-  name: string
-  email: string
-}
+import type { User } from "../model/types"
+import { httpClient } from "@/shared/lib"
 
 export const userApi = {
-  getCurrentUser: async (): Promise<User> => {
-    return api.get("user/me").json()
-  },
-
-  updateProfile: async (data: Partial<User>): Promise<User> => {
-    return api.patch("user/profile", { json: data }).json()
+  getMe: async (): Promise<User> => {
+    return httpClient.get("users/me").json<User>()
   },
 }
 ```
@@ -217,26 +284,38 @@ export const userApi = {
 
 ```typescript
 // src/entities/user/api/user.queries.ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/react-query"
 import { userApi } from "./user.api"
 
-export const useCurrentUser = () => {
-  return useQuery({
-    queryKey: ["user", "current"],
-    queryFn: userApi.getCurrentUser,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
+export const userKeys = {
+  me: () => ["me"] as const,
 }
 
-export const useUpdateProfile = () => {
-  const queryClient = useQueryClient()
+export const userQueries = {
+  me: () =>
+    queryOptions({
+      queryKey: userKeys.me(),
+      queryFn: userApi.getMe,
+    }),
+}
+```
 
-  return useMutation({
-    mutationFn: userApi.updateProfile,
-    onSuccess: (data) => {
-      queryClient.setQueryData(["user", "current"], data)
-    },
+### Using User Queries
+
+```typescript
+// In components or hooks
+import { useQuery } from "@tanstack/react-query"
+import { userQueries } from "@/entities/user"
+
+const MyComponent = () => {
+  const { data: user, isLoading, isError } = useQuery({
+    ...userQueries.me(),
   })
+
+  if (isLoading) return <div>Loading...</div>
+  if (isError) return <div>Error loading user</div>
+
+  return <div>Hello, {user.name}!</div>
 }
 ```
 
@@ -244,110 +323,171 @@ export const useUpdateProfile = () => {
 
 ### HTTP Error Types
 
+The HTTP client uses `HTTPError` from the `ky` library:
+
 ```typescript
-// src/shared/lib/http/types.ts
-export class HTTPError extends Error {
-  constructor(
-    public status: number,
-    public statusText: string,
-    public data?: any
-  ) {
-    super(`${status}: ${statusText}`)
-  }
-}
+// src/shared/lib/http/client.ts
+import ky, { type HTTPError } from "ky"
 
-export class NetworkError extends Error {
-  constructor(message: string) {
-    super(message)
-  }
-}
-
-export class ValidationError extends Error {
-  constructor(public errors: Record<string, string[]>) {
-    super("Validation failed")
-  }
-}
+export type { HTTPError }
 ```
+
+The `HTTPError` type from `ky` includes:
+
+- `response`: Response object with status, statusText, etc.
+- `request`: Request object
+- `message`: Error message
 
 ### Error Handling in Queries
 
+Token refresh on 401 errors is handled automatically by React Query error handlers:
+
 ```typescript
 // src/shared/lib/react-query/error-handlers.ts
-import { HTTPError, NetworkError } from "@/shared/lib/http"
+import type { Mutation, Query } from "@tanstack/react-query"
+import { authApi } from "@/features/auth/api/auth.api"
+import { tokenStorage } from "@/shared/lib"
 
-export const handleQueryError = (error: unknown) => {
-  if (error instanceof HTTPError) {
-    switch (error.status) {
-      case 401:
-        // Handle authentication error
-        tokenStorage.clear()
-        window.location.href = "/login"
-        break
-      case 403:
-        // Handle forbidden error
-        showToast("You do not have permission to perform this action")
-        break
-      case 422:
-        // Handle validation error
-        showValidationErrors(error.data)
-        break
-      default:
-        // Handle other HTTP errors
-        showToast("An error occurred. Please try again.")
+let isRefreshing = false
+let failedQueue: {
+  query?: Query<unknown, unknown, unknown>
+  mutation?: Mutation<unknown, unknown, unknown, unknown>
+  variables?: unknown
+}[] = []
+
+const processFailedQueue = () => {
+  failedQueue.forEach(({ query, mutation, variables }) => {
+    if (mutation) {
+      const { options } = mutation
+      mutation.setOptions(options)
+      mutation.execute(variables)
     }
-  } else if (error instanceof NetworkError) {
-    showToast("Network error. Please check your connection.")
-  } else {
-    // Handle unknown errors
-    console.error("Unknown error:", error)
-    showToast("An unexpected error occurred.")
+    if (query) {
+      query.fetch()
+    }
+  })
+  isRefreshing = false
+  failedQueue = []
+}
+
+const refreshTokenAndRetry = async (
+  query?: Query<unknown, unknown, unknown>,
+  mutation?: Mutation<unknown, unknown, unknown, unknown>,
+  variables?: unknown
+) => {
+  const refreshToken = tokenStorage.getRefreshToken()
+
+  if (!refreshToken) {
+    tokenStorage.clearTokens()
+    return
+  }
+
+  try {
+    if (!isRefreshing) {
+      isRefreshing = true
+      failedQueue.push({ query, mutation, variables })
+
+      const responseData = await authApi.refresh()
+      tokenStorage.setTokens(
+        responseData.accessToken,
+        responseData.refreshToken,
+        responseData.expiresIn
+      )
+
+      processFailedQueue()
+    } else {
+      failedQueue.push({ query, mutation, variables })
+    }
+  } catch {
+    tokenStorage.clearTokens()
   }
 }
+
+const errorHandler = (
+  error: unknown,
+  query?: Query<unknown, unknown, unknown>,
+  mutation?: Mutation<unknown, unknown, unknown, unknown>,
+  variables?: unknown
+) => {
+  if (error && typeof error === "object" && "response" in error) {
+    const httpError = error as { response?: { status?: number } }
+    const status = httpError.response?.status
+
+    if (status === 401) {
+      if (mutation) {
+        refreshTokenAndRetry(undefined, mutation, variables)
+      } else {
+        refreshTokenAndRetry(query)
+      }
+    }
+  }
+}
+
+export const queryErrorHandler = (error: unknown, query: Query<unknown, unknown, unknown>) => {
+  errorHandler(error, query)
+}
+
+export const mutationErrorHandler = (
+  error: unknown,
+  variables: unknown,
+  _context: unknown,
+  mutation: Mutation<unknown, unknown, unknown, unknown>
+) => {
+  errorHandler(error, undefined, mutation, variables)
+}
 ```
+
+**Key Features:**
+
+- Automatic token refresh on 401 errors
+- Race condition protection (multiple 401s share the same refresh)
+- Failed requests are queued and retried after refresh
+- Tokens are cleared if refresh fails
 
 ## Request/Response Types
 
-### Request Types
+### API Types
 
 ```typescript
 // src/shared/types/api.types.ts
+export interface ApiError {
+  message: string
+  code?: string
+  statusCode?: number
+  errors?: Record<string, string[]>
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  total: number
+  page: number
+  pageSize: number
+}
+
 export interface ApiResponse<T> {
   data: T
   message?: string
-  meta?: {
-    page: number
-    limit: number
-    total: number
-  }
-}
-
-export interface PaginatedRequest {
-  page?: number
-  limit?: number
-  search?: string
-  sort?: string
-  order?: "asc" | "desc"
 }
 ```
 
-### Response Transformers
+### HTTP Client Types
 
 ```typescript
-// src/shared/lib/api/transformers.ts
-export const transformApiResponse = <T>(response: ApiResponse<T>): T => {
-  return response.data
+// src/shared/lib/http/types.ts
+import type { HTTPError } from "ky"
+
+export interface RefreshTokenResponse {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
 }
 
-export const transformPaginatedResponse = <T>(response: ApiResponse<T[]>): PaginatedResponse<T> => {
-  return {
-    data: response.data,
-    pagination: {
-      page: response.meta?.page ?? 1,
-      limit: response.meta?.limit ?? 10,
-      total: response.meta?.total ?? 0,
-    },
-  }
+export interface HttpClientConfig {
+  baseUrl: string
+  timeout?: number
 }
+
+export type { HTTPError }
 ```
 
 ## Testing API Calls
@@ -356,18 +496,16 @@ export const transformPaginatedResponse = <T>(response: ApiResponse<T[]>): Pagin
 
 ```typescript
 // __tests__/mocks/handlers.ts
-import { rest } from "msw"
+import { http, HttpResponse } from "msw"
 
 export const handlers = [
-  rest.post("/api/auth/login", (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        accessToken: "mock-token",
-        refreshToken: "mock-refresh-token",
-        user: { id: "1", name: "John Doe" },
-      })
-    )
+  http.post("http://localhost:3000/api/auth/login", async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json({
+      accessToken: "mock-token",
+      refreshToken: "mock-refresh-token",
+      expiresIn: 3600,
+    })
   }),
 ]
 ```
@@ -413,9 +551,8 @@ describe('useLoginMutation', () => {
     expect(result.current.data).toEqual(
       expect.objectContaining({
         accessToken: expect.any(String),
-        user: expect.objectContaining({
-          name: expect.any(String)
-        })
+        refreshToken: expect.any(String),
+        expiresIn: expect.any(Number),
       })
     )
   })
@@ -424,23 +561,46 @@ describe('useLoginMutation', () => {
 
 ## Performance Optimization
 
-### Query Keys
+### Query Keys Pattern
+
+Query keys are defined alongside queries using a consistent pattern:
 
 ```typescript
-// src/shared/lib/react-query/keys.ts
-export const queryKeys = {
-  user: {
-    current: () => ["user", "current"] as const,
-    list: (filters?: UserFilters) => ["user", "list", filters] as const,
-    detail: (id: string) => ["user", "detail", id] as const,
-  },
-  auth: {
-    session: () => ["auth", "session"] as const,
-  },
-} as const
+// src/entities/user/api/user.queries.ts
+export const userKeys = {
+  me: () => ["me"] as const,
+}
+
+export const userQueries = {
+  me: () =>
+    queryOptions({
+      queryKey: userKeys.me(),
+      queryFn: userApi.getMe,
+    }),
+}
 ```
 
-### Optimistic Updates
+**Benefits:**
+
+- Type-safe query keys
+- Centralized key management
+- Easy invalidation using `queryClient.invalidateQueries({ queryKey: userKeys.me() })`
+
+### Using Query Options
+
+The `queryOptions` helper from TanStack Query provides better TypeScript inference:
+
+```typescript
+import { useQuery } from "@tanstack/react-query"
+import { userQueries } from "@/entities/user"
+
+// Spread the query options for full type safety
+const { data, isLoading } = useQuery({
+  ...userQueries.me(),
+})
+```
+
+### Optimistic Updates Example
 
 ```typescript
 export const useUpdateUser = () => {
@@ -450,25 +610,25 @@ export const useUpdateUser = () => {
     mutationFn: userApi.updateUser,
     onMutate: async (updatedUser) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.user.detail(updatedUser.id) })
+      await queryClient.cancelQueries({ queryKey: userKeys.me() })
 
       // Snapshot previous value
-      const previousUser = queryClient.getQueryData(queryKeys.user.detail(updatedUser.id))
+      const previousUser = queryClient.getQueryData(userKeys.me())
 
       // Optimistically update
-      queryClient.setQueryData(queryKeys.user.detail(updatedUser.id), updatedUser)
+      queryClient.setQueryData(userKeys.me(), updatedUser)
 
       return { previousUser }
     },
     onError: (err, updatedUser, context) => {
       // Revert on error
       if (context?.previousUser) {
-        queryClient.setQueryData(queryKeys.user.detail(updatedUser.id), context.previousUser)
+        queryClient.setQueryData(userKeys.me(), context.previousUser)
       }
     },
-    onSettled: (updatedUser) => {
+    onSettled: () => {
       // Refetch after mutation
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(updatedUser.id) })
+      queryClient.invalidateQueries({ queryKey: userKeys.me() })
     },
   })
 }
