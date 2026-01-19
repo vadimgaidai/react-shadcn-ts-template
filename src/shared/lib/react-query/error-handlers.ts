@@ -1,5 +1,16 @@
 import type { Mutation, Query } from "@tanstack/react-query"
 
+/**
+ * FSD VIOLATION: This file imports from features/auth layer.
+ *
+ * This is a conscious architectural decision because:
+ * 1. Token refresh is tightly coupled to global error handling infrastructure
+ * 2. Moving this logic to features would require features to import features (also a violation)
+ * 3. Alternative patterns (DI, events) add complexity without meaningful benefit
+ *
+ * The app/ layer approach with useEffect configuration was considered but rejected
+ * as it introduces unnecessary runtime complexity for a compile-time dependency.
+ */
 import { authApi } from "@/features/auth/api/auth.api"
 import { tokenStorage } from "@/shared/lib"
 
@@ -37,24 +48,25 @@ const refreshTokenAndRetry = async (
     return
   }
 
-  try {
-    if (!isRefreshing) {
-      isRefreshing = true
-      failedQueue.push({ query, mutation, variables })
+  if (!isRefreshing) {
+    isRefreshing = true
+    failedQueue.push({ query, mutation, variables })
 
+    try {
       const responseData = await authApi.refresh()
       tokenStorage.setTokens(
         responseData.accessToken,
         responseData.refreshToken,
         responseData.expiresIn
       )
-
       processFailedQueue()
-    } else {
-      failedQueue.push({ query, mutation, variables })
+    } catch {
+      isRefreshing = false
+      failedQueue = []
+      tokenStorage.clearTokens()
     }
-  } catch {
-    tokenStorage.clearTokens()
+  } else {
+    failedQueue.push({ query, mutation, variables })
   }
 }
 

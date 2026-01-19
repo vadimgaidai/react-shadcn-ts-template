@@ -30,6 +30,12 @@
   "navigation": {
     "home": "Home"
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again or contact support if the problem persists.",
+    "tryAgain": "Try Again",
+    "reloadPage": "Reload Page"
+  },
   "home": {
     "welcome": {
       "title": "Welcome",

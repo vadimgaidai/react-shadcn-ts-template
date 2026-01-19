@@ -1,5 +1,6 @@
 /**
- * Token storage with localStorage persistence
+ * @security WARNING: localStorage is vulnerable to XSS attacks T_T
+ * (will be better use backend with httpOnly cookies)
  */
 
 const ACCESS_TOKEN_KEY = "access_token"

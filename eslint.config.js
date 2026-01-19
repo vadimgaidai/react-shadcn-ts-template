@@ -57,7 +57,6 @@ export default tseslint.config(
     rules: {
       ...eslintPluginReactHooks.configs.recommended.rules,
 
-      // Core JavaScript rules
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "no-alert": "error",
       "no-var": "error",
@@ -69,7 +68,6 @@ export default tseslint.config(
       "no-tabs": "error",
       "prefer-arrow-callback": "error",
 
-      // React specific rules
       "react/jsx-filename-extension": ["error", { extensions: [".tsx"] }],
       "react/react-in-jsx-scope": "off",
       "react/jsx-props-no-spreading": "error",
@@ -84,7 +82,6 @@ export default tseslint.config(
       "react/button-has-type": "error",
       "react/jsx-props-no-spreading": "warn",
 
-      // TypeScript rules
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -93,7 +90,6 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/ban-ts-comment": "warn",
 
-      // Import rules
       "import/order": [
         "error",
         {
@@ -106,13 +102,11 @@ export default tseslint.config(
       "import/no-default-export": "off",
       "import/no-cycle": "error",
 
-      // Stylistic rules
       "stylistic/semi": ["error", "never"],
       "stylistic/jsx-quotes": ["error", "prefer-double"],
       "stylistic/quote-props": ["error", "consistent-as-needed"],
       "stylistic/arrow-parens": ["error", "always"],
 
-      // Accessibility
       "jsx-a11y/alt-text": "error",
       "jsx-a11y/anchor-is-valid": "error",
     },
