@@ -12,7 +12,7 @@ This directory contains comprehensive documentation for the React TypeScript Fea
 
 ### Development
 
-- **[Development Workflow](./development.md)** - Tools, scripts, and best practices
+- **[Development Workflow](./development.md)** - Tools, scripts, and best practices, including build configuration and performance optimization
 
 ## Quick Start
 
@@ -48,6 +48,7 @@ This project uses [Feature-Sliced Design](https://feature-sliced.design/) - a me
 - **React 19** with modern patterns and hooks
 - **TanStack Query** for server state management
 - **Zod** for runtime type validation
+- **Performance optimization** following [Vercel React Best Practices](https://vercel.com/blog/introducing-react-best-practices) for faster apps and smaller bundles
 
 ### Security First
 

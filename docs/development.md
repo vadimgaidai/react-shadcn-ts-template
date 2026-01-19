@@ -296,11 +296,53 @@ pnpm preview
 
 ### Build Configuration
 
-Vite configuration in `vite.config.ts`:
+Vite configuration in `vite.config.ts` includes path aliases, build optimization, and development server settings.
 
-- Path aliases
-- Build optimization
-- Development server settings
+#### Bundle Splitting with Manual Chunks
+
+The build configuration uses manual chunks to split code into smaller pieces. This helps with caching and loading speed.
+
+When you build the project, Vite creates separate files for different libraries. For example, React code is in one file, UI components in another, and your application code in a separate file.
+
+This means:
+- When you update your code, only your application file changes
+- Browser can cache library files for longer
+- Users download smaller files when the app updates
+
+The configuration groups libraries by purpose:
+
+- React and React DOM go together because they change rarely
+- UI libraries like Radix UI are grouped together
+- Form libraries like react-hook-form and zod are grouped
+- Icons from lucide-react are separate because the library is large
+- Other libraries are grouped by what they do
+
+You can see the size of each chunk after building by checking the build output in the terminal.
+
+#### Bundle Visualization
+
+The project uses rollup-plugin-visualizer to create a visual report of bundle sizes. After building, check the `stats.html` file in the project root to see which parts of your code take up space.
+
+To use it:
+1. Run `pnpm build`
+2. Open `stats.html` in your browser
+3. Look at the sizes of different chunks
+4. Find parts that are too large and consider code splitting
+
+#### Performance Best Practices
+
+This project follows performance guidelines from [Vercel React Best Practices](https://vercel.com/blog/introducing-react-best-practices). These practices help make apps faster by:
+
+- Reducing the size of JavaScript files
+- Splitting code into smaller pieces
+- Loading code only when needed
+- Optimizing how components render
+
+The main areas covered are:
+- Bundle size optimization through code splitting
+- Eliminating unnecessary async operations
+- Optimizing component re-renders
+- Efficient data fetching patterns
 
 ## Performance Optimization
 

@@ -10,6 +10,7 @@ A production-ready React template with Feature-Sliced Design architecture.
 - TanStack Query for data fetching
 - Shadcn/ui components with Tailwind CSS
 - Code quality tools (ESLint, Prettier, Stylelint)
+- Performance optimization following [Vercel React Best Practices](https://vercel.com/blog/introducing-react-best-practices)
 
 ## Project Structure
 
@@ -114,6 +115,14 @@ VITE_ENABLE_DEVTOOLS=true
 | `@features` | `src/features` |
 | `@entities` | `src/entities` |
 | `@shared`   | `src/shared`   |
+
+## Performance Optimization
+
+This project follows performance best practices from [Vercel React Best Practices](https://vercel.com/blog/introducing-react-best-practices). These practices help improve app performance by reducing bundle size, eliminating async waterfalls, and optimizing re-renders.
+
+The codebase uses optimized bundle splitting with manual chunks, proper code splitting with React.lazy, and follows patterns for efficient data fetching and rendering.
+
+For detailed information about build configuration and optimization, see the [Build Configuration](docs/development.md#build-configuration) section in the documentation.
 
 ## Documentation
 
