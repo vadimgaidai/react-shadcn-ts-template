@@ -2,8 +2,8 @@ import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-re
 import * as React from "react"
 
 import { cn } from "@/shared/lib"
-import type { Button } from "@/shared/ui"
-import { buttonVariants } from "@/shared/ui"
+import type { Button } from "@/shared/ui/button"
+import { buttonVariants } from "@/shared/ui/button"
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => {
   return (
@@ -102,9 +102,9 @@ const PaginationEllipsis = ({ className, ...props }: React.ComponentProps<"span"
 export {
   Pagination,
   PaginationContent,
-  PaginationLink,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
   PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 }

@@ -1,7 +1,7 @@
 import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
 
 const HomePage: FC = () => {
   const { t } = useTranslation()

@@ -6,9 +6,9 @@ import { UserMenu } from "./user-menu"
 
 import { env } from "@/shared/config"
 import { cn } from "@/shared/lib"
+import { ScrollArea } from "@/shared/ui/scroll-area"
+import { Separator } from "@/shared/ui/separator"
 import {
-  ScrollArea,
-  Separator,
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -16,7 +16,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/shared/ui"
+} from "@/shared/ui/sidebar"
 
 interface AsideProps extends ComponentProps<typeof Sidebar> {
   className?: string

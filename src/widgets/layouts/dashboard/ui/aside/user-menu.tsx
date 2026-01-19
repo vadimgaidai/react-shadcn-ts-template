@@ -2,7 +2,8 @@ import { LogOut } from "lucide-react"
 import type { FC } from "react"
 
 import { useAuth } from "@/features/auth"
-import { Avatar, AvatarFallback, AvatarImage, Button } from "@/shared/ui"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
+import { Button } from "@/shared/ui/button"
 
 export const UserMenu: FC = () => {
   const { user, logout } = useAuth()

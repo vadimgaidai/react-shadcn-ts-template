@@ -13,11 +13,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Separator,
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/shared/ui"
+} from "@/shared/ui/breadcrumb"
+import { Separator } from "@/shared/ui/separator"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/shared/ui/sidebar"
 
 interface DashboardLayoutProps {
   children: ReactNode

@@ -11,7 +11,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/shared/ui"
+} from "@/shared/ui/sidebar"
 
 export const Navigation: FC = () => {
   const { t } = useTranslation()

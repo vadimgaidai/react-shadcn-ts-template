@@ -5,7 +5,7 @@ import { AppProviders } from "./providers"
 import { routes } from "./routes"
 
 import { cn } from "@/shared/lib"
-import { Toaster } from "@/shared/ui"
+import { Toaster } from "@/shared/ui/sonner"
 
 const App: FC = () => {
   const element = useRoutes(routes)
