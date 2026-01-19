@@ -57,6 +57,24 @@ export default tseslint.config(
     rules: {
       ...eslintPluginReactHooks.configs.recommended.rules,
 
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@/shared/ui",
+              message:
+                "Import directly from component files instead. Example: import { Button } from '@/shared/ui/button'",
+            },
+            {
+              name: "@/shared/ui/index",
+              message:
+                "Import directly from component files instead. Example: import { Button } from '@/shared/ui/button'",
+            },
+          ],
+        },
+      ],
+
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "no-alert": "error",
       "no-var": "error",
