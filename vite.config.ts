@@ -28,15 +28,7 @@ export default defineConfig({
     ],
   },
   optimizeDeps: {
-    include: [
-      "lucide-react",
-      "react",
-      "react-dom",
-      "react-i18next",
-      "i18next",
-      "@radix-ui/react-slot",
-      "@radix-ui/react-dialog",
-    ],
+    include: ["lucide-react", "react", "react-dom", "react-i18next", "i18next"],
   },
   build: {
     commonjsOptions: {
