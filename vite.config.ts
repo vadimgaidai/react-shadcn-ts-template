@@ -46,11 +46,18 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
+          if (id.includes("node_modules/react-i18next") || id.includes("node_modules/i18next")) {
+            return "vendor-i18n"
+          }
+
           if (id.includes("node_modules/react-router")) {
             return "vendor-router"
           }
 
-          if (id.includes("node_modules/@tanstack/react-query")) {
+          if (
+            id.includes("node_modules/@tanstack/react-query") ||
+            id.includes("node_modules/@tanstack/react-table")
+          ) {
             return "vendor-query"
           }
 
@@ -64,6 +71,8 @@ export default defineConfig({
 
           if (
             id.includes("node_modules/@radix-ui") ||
+            id.includes("node_modules/react-day-picker") ||
+            id.includes("node_modules/react-resizable-panels") ||
             id.includes("node_modules/class-variance-authority") ||
             id.includes("node_modules/clsx") ||
             id.includes("node_modules/tailwind-merge")
@@ -77,6 +86,25 @@ export default defineConfig({
 
           if (id.includes("node_modules/recharts")) {
             return "vendor-charts"
+          }
+
+          if (
+            id.includes("node_modules/embla-carousel-react") ||
+            id.includes("node_modules/embla-carousel")
+          ) {
+            return "vendor-carousel"
+          }
+
+          if (
+            id.includes("node_modules/usehooks-ts") ||
+            id.includes("node_modules/date-fns") ||
+            id.includes("node_modules/ky") ||
+            id.includes("node_modules/input-otp") ||
+            id.includes("node_modules/cmdk") ||
+            id.includes("node_modules/sonner") ||
+            id.includes("node_modules/vaul")
+          ) {
+            return "vendor-utils"
           }
         },
       },
