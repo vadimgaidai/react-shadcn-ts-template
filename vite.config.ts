@@ -28,29 +28,30 @@ export default defineConfig({
     ],
   },
   optimizeDeps: {
-    include: ["lucide-react"],
+    include: [
+      "lucide-react",
+      "react",
+      "react-dom",
+      "react-i18next",
+      "i18next",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-dialog",
+    ],
   },
   build: {
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (id.includes("node_modules/react-dom") || id.includes("node_modules/react/")) {
-            return "vendor-react"
-          }
           if (id.includes("node_modules/react-router")) {
             return "vendor-router"
           }
 
-          if (id.includes("node_modules/@radix-ui")) {
-            return "vendor-radix"
-          }
-
           if (id.includes("node_modules/@tanstack/react-query")) {
             return "vendor-query"
-          }
-
-          if (id.includes("node_modules/i18next") || id.includes("node_modules/react-i18next")) {
-            return "vendor-i18n"
           }
 
           if (
@@ -61,32 +62,21 @@ export default defineConfig({
             return "vendor-form"
           }
 
-          if (id.includes("node_modules/lucide-react")) {
-            return "vendor-icons"
-          }
-
           if (
+            id.includes("node_modules/@radix-ui") ||
             id.includes("node_modules/class-variance-authority") ||
             id.includes("node_modules/clsx") ||
             id.includes("node_modules/tailwind-merge")
           ) {
-            return "vendor-ui-utils"
+            return "vendor-ui"
           }
 
-          if (id.includes("node_modules/embla-carousel")) {
-            return "vendor-carousel"
+          if (id.includes("node_modules/lucide-react")) {
+            return "vendor-icons"
           }
 
-          if (id.includes("node_modules/cmdk")) {
-            return "vendor-cmdk"
-          }
-
-          if (id.includes("node_modules/sonner") || id.includes("node_modules/vaul")) {
-            return "vendor-notifications"
-          }
-
-          if (id.includes("node_modules/next-themes")) {
-            return "vendor-theme"
+          if (id.includes("node_modules/recharts")) {
+            return "vendor-charts"
           }
         },
       },
