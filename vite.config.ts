@@ -1,5 +1,6 @@
+import babel from "@rolldown/plugin-babel"
 import tailwindcss from "@tailwindcss/vite"
-import react from "@vitejs/plugin-react"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
 import autoprefixer from "autoprefixer"
 import path from "path"
 import { visualizer } from "rollup-plugin-visualizer"
@@ -8,6 +9,9 @@ import { defineConfig } from "vite"
 export default defineConfig({
   plugins: [
     react(),
+    babel({
+      presets: [reactCompilerPreset()],
+    }),
     tailwindcss(),
     visualizer({
       filename: "stats.html",

@@ -14,7 +14,14 @@ if (!rootElement) {
   throw new Error("Failed to find root element. Check your index.html.")
 }
 
-createRoot(rootElement).render(
+createRoot(rootElement, {
+  onCaughtError(error, errorInfo) {
+    console.error("React caught error:", error, errorInfo.componentStack)
+  },
+  onUncaughtError(error, errorInfo) {
+    console.error("React uncaught error:", error, errorInfo.componentStack)
+  },
+}).render(
   <StrictMode>
     <BrowserRouter>
       <App />
