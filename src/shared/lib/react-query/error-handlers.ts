@@ -1,4 +1,5 @@
 import type { Mutation, Query } from "@tanstack/react-query"
+import { HTTPError } from "ky"
 
 /**
  * FSD VIOLATION: This file imports from features/auth layer.
@@ -14,7 +15,10 @@ import type { Mutation, Query } from "@tanstack/react-query"
 import { authApi } from "@/features/auth/api/auth.api"
 import { tokenStorage } from "@/shared/lib"
 
+const MAX_REFRESH_ATTEMPTS = 1
+
 let isRefreshing = false
+let refreshAttempts = 0
 let failedQueue: {
   query?: Query<unknown, unknown, unknown>
   mutation?: Mutation<unknown, unknown, unknown, unknown>
@@ -22,7 +26,11 @@ let failedQueue: {
 }[] = []
 
 const processFailedQueue = () => {
-  failedQueue.forEach(({ query, mutation, variables }) => {
+  const queue = [...failedQueue]
+  failedQueue = []
+  isRefreshing = false
+
+  queue.forEach(({ query, mutation, variables }) => {
     if (mutation) {
       const { options } = mutation
       mutation.setOptions(options)
@@ -32,7 +40,11 @@ const processFailedQueue = () => {
       query.fetch()
     }
   })
+}
+
+const clearRefreshState = () => {
   isRefreshing = false
+  refreshAttempts = 0
   failedQueue = []
 }
 
@@ -43,13 +55,15 @@ const refreshTokenAndRetry = async (
 ) => {
   const refreshToken = tokenStorage.getRefreshToken()
 
-  if (!refreshToken) {
+  if (!refreshToken || refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
+    clearRefreshState()
     tokenStorage.clearTokens()
     return
   }
 
   if (!isRefreshing) {
     isRefreshing = true
+    refreshAttempts++
     failedQueue.push({ query, mutation, variables })
 
     try {
@@ -60,9 +74,9 @@ const refreshTokenAndRetry = async (
         responseData.expiresIn
       )
       processFailedQueue()
+      refreshAttempts = 0
     } catch {
-      isRefreshing = false
-      failedQueue = []
+      clearRefreshState()
       tokenStorage.clearTokens()
     }
   } else {
@@ -76,16 +90,11 @@ const errorHandler = (
   mutation?: Mutation<unknown, unknown, unknown, unknown>,
   variables?: unknown
 ) => {
-  if (error && typeof error === "object" && "response" in error) {
-    const httpError = error as { response?: { status?: number } }
-    const status = httpError.response?.status
-
-    if (status === 401) {
-      if (mutation) {
-        refreshTokenAndRetry(undefined, mutation, variables)
-      } else {
-        refreshTokenAndRetry(query)
-      }
+  if (error instanceof HTTPError && error.response.status === 401) {
+    if (mutation) {
+      refreshTokenAndRetry(undefined, mutation, variables)
+    } else {
+      refreshTokenAndRetry(query)
     }
   }
 }

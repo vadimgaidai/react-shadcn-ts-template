@@ -40,7 +40,6 @@ export const useLogoutMutation = () => {
     onSuccess: () => {
       tokenStorage.clearTokens()
       queryClient.clear()
-      queryClient.setQueryData(userKeys.me(), null)
     },
     onError: (error) => {
       console.error("Logout failed:", error)

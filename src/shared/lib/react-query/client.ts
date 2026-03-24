@@ -1,4 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
+import { HTTPError } from "ky"
 
 import { mutationErrorHandler, queryErrorHandler } from "./error-handlers"
 
@@ -10,9 +11,9 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
       retry: (failureCount, error) => {
-        if (error instanceof Error && "response" in error) {
-          const status = (error as { response?: { status?: number } }).response?.status
-          if (status && status >= 400 && status < 500) {
+        if (error instanceof HTTPError) {
+          const status = error.response.status
+          if (status >= 400 && status < 500) {
             return false
           }
         }
