@@ -5,7 +5,7 @@ import { z } from "zod"
  */
 const envSchema = z.object({
   MODE: z.enum(["development", "production"]).default("development"),
-  VITE_API_URL: z.string().url().default("http://localhost:3000"),
+  VITE_API_URL: z.string().url(),
   VITE_APP_NAME: z.string().default("React App"),
   VITE_ENABLE_DEVTOOLS: z
     .string()
