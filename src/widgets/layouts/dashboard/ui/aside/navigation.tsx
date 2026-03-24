@@ -5,6 +5,8 @@ import { Link, useLocation } from "react-router"
 import { menuConfig } from "../../config/menu.config"
 
 import {
+  SidebarGroup,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -19,43 +21,40 @@ export const Navigation: FC = () => {
   const parentLocation = String(location.pathname.split("/").filter(Boolean)[0] ?? "")
 
   return (
-    <SidebarMenu>
-      {menuConfig.map((item) => {
-        const isItemActive = item.url.includes(parentLocation) || item.url === location.pathname
+    <SidebarGroup>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {menuConfig.map((item) => {
+            const isItemActive = item.url.includes(parentLocation) || item.url === location.pathname
 
-        return (
-          <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton
-              asChild
-              className="h-auto"
-              {...(isItemActive ? { isActive: true } : {})}
-            >
-              <Link to={item.url}>
-                {item?.icon && <item.icon />}
-                <span>{t(item.title)}</span>
-              </Link>
-            </SidebarMenuButton>
-            {item.items?.length ? (
-              <SidebarMenuSub>
-                {item.items.map((subItem) => {
-                  const isSubItemActive = subItem.url === location.pathname || subItem.isActive
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild isActive={isItemActive}>
+                  <Link to={item.url}>
+                    {item?.icon && <item.icon />}
+                    <span>{t(item.title)}</span>
+                  </Link>
+                </SidebarMenuButton>
+                {item.items?.length ? (
+                  <SidebarMenuSub>
+                    {item.items.map((subItem) => {
+                      const isSubItemActive = subItem.url === location.pathname || subItem.isActive
 
-                  return (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton
-                        asChild
-                        {...(isSubItemActive ? { isActive: true } : {})}
-                      >
-                        <Link to={subItem.url}>{t(subItem.title)}</Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )
-                })}
-              </SidebarMenuSub>
-            ) : null}
-          </SidebarMenuItem>
-        )
-      })}
-    </SidebarMenu>
+                      return (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild isActive={isSubItemActive}>
+                            <Link to={subItem.url}>{t(subItem.title)}</Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      )
+                    })}
+                  </SidebarMenuSub>
+                ) : null}
+              </SidebarMenuItem>
+            )
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   )
 }

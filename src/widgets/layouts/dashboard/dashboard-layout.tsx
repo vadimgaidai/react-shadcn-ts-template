@@ -39,40 +39,36 @@ export const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
   }, [location.pathname, parentLocation])
 
   return (
-    <div className="bg-primary-gradient h-screen">
-      <SidebarProvider>
-        <Aside />
-        <SidebarInset className="h-screen bg-transparent">
-          <header className="flex h-16 shrink-0 items-center gap-2">
-            <div className="flex items-center gap-2 px-3">
-              <SidebarTrigger className="text-muted-foreground hover:text-primary -ml-1 hover:bg-transparent" />
-              <Breadcrumb>
-                <BreadcrumbList>
-                  {currentSection && (
+    <SidebarProvider>
+      <Aside />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              {currentSection && (
+                <>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href={currentSection.url}>
+                      {t(currentSection.title)}
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  {currentSubSection && (
                     <>
-                      <BreadcrumbItem className="hidden md:block">
-                        <BreadcrumbLink href={currentSection.url}>
-                          {t(currentSection.title)}
-                        </BreadcrumbLink>
+                      <BreadcrumbSeparator className="hidden md:block" />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>{t(currentSubSection.title)}</BreadcrumbPage>
                       </BreadcrumbItem>
-                      {currentSubSection && (
-                        <>
-                          <BreadcrumbSeparator className="hidden md:block" />
-                          <BreadcrumbItem>
-                            <BreadcrumbPage>{t(currentSubSection.title)}</BreadcrumbPage>
-                          </BreadcrumbItem>
-                        </>
-                      )}
                     </>
                   )}
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
-          </header>
-          <Separator />
-          <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
+                </>
+              )}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

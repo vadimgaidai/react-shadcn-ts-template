@@ -1,7 +1,17 @@
+import { AlertCircleIcon, RefreshCwIcon, RotateCcwIcon } from "lucide-react"
 import { Component, type ErrorInfo, type ReactNode } from "react"
 import { Translation } from "react-i18next"
 
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
 import { Button } from "@/shared/ui/button"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/shared/ui/empty"
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -44,29 +54,36 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <Translation>
           {(t) => (
             <div className="bg-background flex min-h-screen w-screen items-center justify-center">
-              <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-6 align-middle">
-                <div className="text-center">
-                  <h2 className="text-destructive mb-2 text-xl font-semibold">
-                    {t("errorBoundary.title")}
-                  </h2>
-                  <p className="text-muted-foreground mb-4 max-w-md text-sm">
-                    {t("errorBoundary.description")}
-                  </p>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <AlertCircleIcon className="text-destructive" />
+                  </EmptyMedia>
+                  <EmptyTitle>{t("errorBoundary.title")}</EmptyTitle>
+                  <EmptyDescription>{t("errorBoundary.description")}</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
                   {this.state.error && (
-                    <pre className="bg-muted mb-4 max-w-md overflow-auto rounded-md p-3 text-left text-xs">
-                      {this.state.error.message}
-                    </pre>
+                    <Alert variant="destructive">
+                      <AlertCircleIcon />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription className="break-all">
+                        {this.state.error.message}
+                      </AlertDescription>
+                    </Alert>
                   )}
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={this.handleReset} variant="outline">
-                    {t("errorBoundary.tryAgain")}
-                  </Button>
-                  <Button onClick={() => window.location.reload()}>
-                    {t("errorBoundary.reloadPage")}
-                  </Button>
-                </div>
-              </div>
+                  <div className="flex gap-2">
+                    <Button onClick={this.handleReset} variant="outline">
+                      <RotateCcwIcon />
+                      {t("errorBoundary.tryAgain")}
+                    </Button>
+                    <Button onClick={() => window.location.reload()}>
+                      <RefreshCwIcon />
+                      {t("errorBoundary.reloadPage")}
+                    </Button>
+                  </div>
+                </EmptyContent>
+              </Empty>
             </div>
           )}
         </Translation>
