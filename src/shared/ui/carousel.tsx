@@ -1,10 +1,10 @@
 "use client"
 
+import * as React from "react"
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import * as React from "react"
 
-import { cn } from "@/shared/lib"
+import { cn } from "@/shared/lib/index"
 import { Button } from "@/shared/ui/button"
 
 type CarouselApi = UseEmblaCarouselType[1]
@@ -40,7 +40,7 @@ function useCarousel() {
   return context
 }
 
-const Carousel = ({
+function Carousel({
   orientation = "horizontal",
   opts,
   setApi,
@@ -48,7 +48,7 @@ const Carousel = ({
   className,
   children,
   ...props
-}: React.ComponentProps<"div"> & CarouselProps) => {
+}: React.ComponentProps<"div"> & CarouselProps) {
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
@@ -129,7 +129,7 @@ const Carousel = ({
   )
 }
 
-const CarouselContent = ({ className, ...props }: React.ComponentProps<"div">) => {
+function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -142,7 +142,7 @@ const CarouselContent = ({ className, ...props }: React.ComponentProps<"div">) =
   )
 }
 
-const CarouselItem = ({ className, ...props }: React.ComponentProps<"div">) => {
+function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
   const { orientation } = useCarousel()
 
   return (
@@ -160,12 +160,12 @@ const CarouselItem = ({ className, ...props }: React.ComponentProps<"div">) => {
   )
 }
 
-const CarouselPrevious = ({
+function CarouselPrevious({
   className,
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) => {
+}: React.ComponentProps<typeof Button>) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
@@ -190,12 +190,12 @@ const CarouselPrevious = ({
   )
 }
 
-const CarouselNext = ({
+function CarouselNext({
   className,
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) => {
+}: React.ComponentProps<typeof Button>) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (
@@ -220,4 +220,4 @@ const CarouselNext = ({
   )
 }
 
-export { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi }
+export { type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext }

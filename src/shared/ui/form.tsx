@@ -1,6 +1,6 @@
-import type * as LabelPrimitive from "@radix-ui/react-label"
-import { Slot } from "@radix-ui/react-slot"
 import * as React from "react"
+import type { Label as LabelPrimitive } from "radix-ui"
+import { Slot } from "radix-ui"
 import {
   Controller,
   FormProvider,
@@ -11,7 +11,7 @@ import {
   type FieldValues,
 } from "react-hook-form"
 
-import { cn } from "@/shared/lib"
+import { cn } from "@/shared/lib/index"
 import { Label } from "@/shared/ui/label"
 
 const Form = FormProvider
@@ -67,7 +67,7 @@ type FormItemContextValue = {
 
 const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue)
 
-const FormItem = ({ className, ...props }: React.ComponentProps<"div">) => {
+function FormItem({ className, ...props }: React.ComponentProps<"div">) {
   const id = React.useId()
 
   return (
@@ -77,7 +77,7 @@ const FormItem = ({ className, ...props }: React.ComponentProps<"div">) => {
   )
 }
 
-const FormLabel = ({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) => {
+function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
   const { error, formItemId } = useFormField()
 
   return (
@@ -91,11 +91,11 @@ const FormLabel = ({ className, ...props }: React.ComponentProps<typeof LabelPri
   )
 }
 
-const FormControl = ({ ...props }: React.ComponentProps<typeof Slot>) => {
+function FormControl({ ...props }: React.ComponentProps<typeof Slot.Root>) {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
-    <Slot
+    <Slot.Root
       data-slot="form-control"
       id={formItemId}
       aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
@@ -105,7 +105,7 @@ const FormControl = ({ ...props }: React.ComponentProps<typeof Slot>) => {
   )
 }
 
-const FormDescription = ({ className, ...props }: React.ComponentProps<"p">) => {
+function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
   const { formDescriptionId } = useFormField()
 
   return (
@@ -118,7 +118,7 @@ const FormDescription = ({ className, ...props }: React.ComponentProps<"p">) => 
   )
 }
 
-const FormMessage = ({ className, ...props }: React.ComponentProps<"p">) => {
+function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : props.children
 
@@ -139,12 +139,12 @@ const FormMessage = ({ className, ...props }: React.ComponentProps<"p">) => {
 }
 
 export {
+  useFormField,
   Form,
-  FormControl,
-  FormDescription,
-  FormField,
   FormItem,
   FormLabel,
+  FormControl,
+  FormDescription,
   FormMessage,
-  useFormField,
+  FormField,
 }
