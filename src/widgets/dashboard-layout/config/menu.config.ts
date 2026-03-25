@@ -1,8 +1,7 @@
 import { House } from "lucide-react"
 
-import type { NavigationConfig } from "../model/types"
-
 import { paths } from "@/shared/config"
+import type { NavigationConfig } from "@/widgets/dashboard-layout"
 
 export const menuConfig: NavigationConfig = [
   {

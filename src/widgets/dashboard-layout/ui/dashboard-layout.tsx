@@ -3,8 +3,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router"
 
-import { menuConfig } from "./config/menu.config"
-import { Aside } from "./ui/aside/aside"
+import { Aside } from "./aside/aside"
 
 import {
   Breadcrumb,
@@ -16,6 +15,7 @@ import {
 } from "@/shared/ui/breadcrumb"
 import { Separator } from "@/shared/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/shared/ui/sidebar"
+import { menuConfig } from "@/widgets/dashboard-layout"
 
 interface DashboardLayoutProps {
   children: ReactNode

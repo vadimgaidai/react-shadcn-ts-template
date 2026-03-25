@@ -1,5 +1,5 @@
 ---
-name: Feature-Sliced Design
+name: feature-sliced-design
 description: This skill should be used when the user asks to "implement FSD", "use Feature-Sliced Design", "organize architecture", "structure project folders", "set up FSD layers", "create feature slices", "refactor to FSD", "add FSD structure", or mentions "feature slices", "layered architecture", "FSD methodology", "architectural organization", "views layer", "entities layer", "shared layer", "Next.js with FSD", or "Turborepo FSD structure". Provides comprehensive guidance for implementing Feature-Sliced Design methodology in Next.js applications with custom 'views' layer naming.
 version: 0.1.0
 ---
@@ -11,20 +11,20 @@ version: 0.1.0
 Feature-Sliced Design (FSD) is an architectural methodology for organizing frontend applications into a standardized, scalable structure. It provides clear separation of concerns through a layered hierarchy that prevents circular dependencies and promotes maintainability.
 
 **Why use FSD:**
+
 - **Scalability**: Grows naturally as your application expands
 - **Maintainability**: Clear boundaries make refactoring safer
 - **Team collaboration**: Consistent structure enables parallel development
 - **Onboarding**: New developers understand architecture quickly
 
-**Custom 'views' layer:**
-This skill uses 'views' instead of the standard FSD 'pages' layer to avoid confusion with Next.js App Router's `/app` directory. The `/app` directory handles routing only (minimal logic), while `/src/views` contains your actual page business logic.
+**Custom 'views' layer:** This skill uses 'views' instead of the standard FSD 'pages' layer to avoid confusion with Next.js App Router's `/app` directory. The `/app` directory handles routing only (minimal logic), while `/src/views` contains your actual page business logic.
 
-**Next.js integration:**
-FSD works seamlessly with Next.js App Router by separating routing concerns (in `/app`) from business logic (in `/src/views` and other FSD layers). This keeps your routing configuration clean while maintaining FSD's architectural benefits.
+**Next.js integration:** FSD works seamlessly with Next.js App Router by separating routing concerns (in `/app`) from business logic (in `/src/views` and other FSD layers). This keeps your routing configuration clean while maintaining FSD's architectural benefits.
 
 ## When to Use
 
 Apply Feature-Sliced Design when:
+
 - Starting new Next.js projects that require clear architectural boundaries
 - Refactoring growing codebases that lack consistent structure
 - Working with multi-developer teams needing standardized organization
@@ -70,11 +70,13 @@ This hierarchy prevents circular dependencies and ensures clear architectural bo
 ### 'Views' vs 'Pages' Layer
 
 **Why 'views' instead of 'pages':**
+
 - Next.js uses `/app` directory for routing (App Router)
 - Standard FSD uses 'pages' layer for page business logic
 - Using 'views' eliminates confusion between routing (`/app`) and business logic (`/src/views`)
 
 **Separation of concerns:**
+
 - **`/app` directory (root level)**: Next.js routing only, minimal logic
   - Contains `page.tsx`, `layout.tsx`, route groups
   - Imports and renders from `/src/views`
@@ -89,19 +91,19 @@ This separation keeps routing configuration clean while maintaining FSD architec
 **Slices** are domain-based partitions within layers (except app and shared, which have no slices).
 
 **Examples:**
+
 - `views/dashboard` - Dashboard page slice
 - `widgets/header` - Header widget slice
 - `features/auth` - Authentication feature slice
 - `entities/user` - User entity slice
 
-**Public API pattern:**
-Each slice exports through `index.ts` to control its public interface:
+**Public API pattern:** Each slice exports through `index.ts` to control its public interface:
 
 ```typescript
 // src/features/auth/index.ts
-export { LoginForm } from './ui/LoginForm';
-export { useAuth } from './model/useAuth';
-export type { AuthState } from './model/types';
+export { LoginForm } from "./ui/LoginForm"
+export { useAuth } from "./model/useAuth"
+export type { AuthState } from "./model/types"
 // Internal implementation details NOT exported
 ```
 
@@ -118,6 +120,7 @@ This prevents deep imports and maintains encapsulation.
 - **config/** - Configuration constants, feature flags
 
 **Example structure:**
+
 ```
 features/
 └── auth/
@@ -139,6 +142,7 @@ features/
 Next.js App Router uses `/app` directory for routing. FSD layers live in `/src` directory.
 
 **File organization:**
+
 ```
 my-nextjs-app/
 ├── app/                          # Next.js routing (minimal logic)
@@ -168,6 +172,7 @@ my-nextjs-app/
 ```
 
 **Routing pages import from views:**
+
 ```typescript
 // app/dashboard/page.tsx - Routing only
 import { DashboardView } from '@/views/dashboard';
@@ -332,6 +337,7 @@ turborepo-root/
 ```
 
 **Key Turborepo principles:**
+
 - Each app (`web`, `admin`) has its own complete FSD structure
 - Apps are independent - no cross-app imports from FSD layers
 - Shared code goes in `packages/` directory (optional)
@@ -344,6 +350,7 @@ turborepo-root/
 **Purpose:** Application-wide setup, initialization, and global configuration.
 
 **Responsibilities:**
+
 - Global providers (theme, auth, query client)
 - Root styles and CSS imports
 - Application-level configuration
@@ -354,6 +361,7 @@ turborepo-root/
 **No slices:** The app layer contains segments directly (providers/, styles/, config/).
 
 **Example:**
+
 ```typescript
 // src/app/providers/Providers.tsx
 'use client';
@@ -392,6 +400,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 **Purpose:** Page-level business logic and component composition.
 
 **Responsibilities:**
+
 - Compose widgets, features, and entities into complete pages
 - Page-specific state management
 - Data fetching for the page
@@ -402,6 +411,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 **Has slices:** Each page gets its own slice (e.g., `views/dashboard`, `views/settings`).
 
 **Example:**
+
 ```typescript
 // src/views/dashboard/ui/DashboardView.tsx
 import { Header } from '@/widgets/header';
@@ -447,6 +457,7 @@ export default async function DashboardPage() {
 **Purpose:** Large, self-contained composite UI blocks that combine multiple features.
 
 **Responsibilities:**
+
 - Reusable across multiple pages
 - Compose multiple features together
 - Complex UI layouts (headers, sidebars, footers)
@@ -457,6 +468,7 @@ export default async function DashboardPage() {
 **Has slices:** Each widget gets its own slice (e.g., `widgets/header`, `widgets/sidebar`).
 
 **Example:**
+
 ```typescript
 // src/widgets/header/ui/Header.tsx
 import { SearchBar } from '@/features/search';
@@ -491,6 +503,7 @@ export { Header } from './ui/Header';
 **Purpose:** User-facing interactions and business logic with clear business value.
 
 **Responsibilities:**
+
 - Specific user actions (login, add to cart, like post)
 - Feature-specific state management
 - Business logic and validation
@@ -501,6 +514,7 @@ export { Header } from './ui/Header';
 **Has slices:** Each feature gets its own slice (e.g., `features/auth`, `features/search`).
 
 **Example:**
+
 ```typescript
 // src/features/auth/model/types.ts
 export interface LoginCredentials {
@@ -565,6 +579,7 @@ export type { LoginCredentials } from './model/types';
 **Purpose:** Business domain objects and core data models.
 
 **Responsibilities:**
+
 - Data structures representing business concepts
 - Entity-specific utilities
 - Base API operations (CRUD)
@@ -575,6 +590,7 @@ export type { LoginCredentials } from './model/types';
 **Has slices:** Each entity gets its own slice (e.g., `entities/user`, `entities/post`).
 
 **Example:**
+
 ```typescript
 // src/entities/user/model/types.ts
 export interface User {
@@ -630,6 +646,7 @@ export type { User } from './model/types';
 **Purpose:** Reusable utilities, UI components, and third-party integrations.
 
 **Responsibilities:**
+
 - UI kit (button, input, card components)
 - Helper functions (formatters, validators)
 - API client configuration
@@ -641,6 +658,7 @@ export type { User } from './model/types';
 **No slices:** Contains segments directly (ui/, lib/, api/, config/).
 
 **Example:**
+
 ```typescript
 // src/shared/ui/button/Button.tsx
 import { type ButtonHTMLAttributes } from 'react';
@@ -715,9 +733,9 @@ Start with entities (bottom layer). Define your core business models:
 ```typescript
 // src/entities/user/model/types.ts
 export interface User {
-  id: string;
-  name: string;
-  email: string;
+  id: string
+  name: string
+  email: string
 }
 
 // src/entities/user/api/getUser.ts
@@ -726,8 +744,8 @@ export async function getUser(id: string): Promise<User> {
 }
 
 // src/entities/user/index.ts
-export type { User } from './model/types';
-export { getUser } from './api/getUser';
+export type { User } from "./model/types"
+export { getUser } from "./api/getUser"
 ```
 
 ### Step 3: Build Features Using Entities
@@ -805,43 +823,45 @@ export default function DashboardPage() {
 
 ```typescript
 // ✅ Layer importing from layer below
-import { User } from '@/entities/user';          // Feature → Entity
-import { LoginForm } from '@/features/auth';     // Widget → Feature
-import { Header } from '@/widgets/header';       // View → Widget
+import { User } from "@/entities/user" // Feature → Entity
+import { LoginForm } from "@/features/auth" // Widget → Feature
+import { Header } from "@/widgets/header" // View → Widget
 
 // ✅ Any layer importing from shared
-import { Button } from '@/shared/ui/button';
-import { formatDate } from '@/shared/lib/format';
+import { Button } from "@/shared/ui/button"
+import { formatDate } from "@/shared/lib/format"
 
 // ✅ Slice importing from different slice in lower layer
-import { User } from '@/entities/user';          // features/auth → entities/user
-import { Post } from '@/entities/post';          // features/like → entities/post
+import { User } from "@/entities/user" // features/auth → entities/user
+import { Post } from "@/entities/post" // features/like → entities/post
 ```
 
 ### Forbidden Import Patterns
 
 ```typescript
 // ❌ Layer importing from same or higher layer
-import { DashboardView } from '@/views/dashboard';  // Feature → View (upward)
-import { Header } from '@/widgets/header';          // Feature → Widget (upward)
-import { LoginForm } from '@/features/login';       // features/auth → features/login (same layer)
+import { DashboardView } from "@/views/dashboard" // Feature → View (upward)
+import { Header } from "@/widgets/header" // Feature → Widget (upward)
+import { LoginForm } from "@/features/login" // features/auth → features/login (same layer)
 
 // ❌ Cross-slice imports within same layer
-import { SearchBar } from '@/features/search';      // features/auth → features/search
+import { SearchBar } from "@/features/search" // features/auth → features/search
 
 // ❌ Shared importing from FSD layers
-import { User } from '@/entities/user';             // shared/lib → entities/user
+import { User } from "@/entities/user" // shared/lib → entities/user
 ```
 
 ### Valid vs Invalid Examples
 
 **Invalid (cross-feature import):**
+
 ```typescript
 // ❌ src/features/search/ui/SearchBar.tsx
-import { LoginForm } from '@/features/auth'; // Same layer import
+import { LoginForm } from "@/features/auth" // Same layer import
 ```
 
 **Valid (extract to widget):**
+
 ```typescript
 // ✅ src/widgets/navbar/ui/Navbar.tsx
 import { SearchBar } from '@/features/search';
@@ -860,6 +880,7 @@ export function Navbar() {
 ### Fixing Circular Dependencies
 
 **Problem:**
+
 ```typescript
 // features/auth imports features/user-settings
 // features/user-settings imports features/auth
@@ -867,6 +888,7 @@ export function Navbar() {
 ```
 
 **Solution 1: Extract to entity**
+
 ```typescript
 // Move shared logic to entities/user
 // Both features import from entities/user
@@ -874,6 +896,7 @@ export function Navbar() {
 ```
 
 **Solution 2: Extract to widget**
+
 ```typescript
 // Create widgets/user-panel that imports both features
 // ✅ Widget layer can import from features
@@ -885,9 +908,9 @@ Always use `index.ts` to control exports:
 
 ```typescript
 // src/features/auth/index.ts
-export { LoginForm } from './ui/LoginForm';
-export { useAuth } from './model/useAuth';
-export type { AuthState } from './model/types';
+export { LoginForm } from "./ui/LoginForm"
+export { useAuth } from "./model/useAuth"
+export type { AuthState } from "./model/types"
 
 // ❌ Do NOT export internal helpers
 // export { validatePassword } from './lib/validation'; // Keep internal
@@ -897,10 +920,10 @@ Import from public API only:
 
 ```typescript
 // ✅ Correct
-import { LoginForm } from '@/features/auth';
+import { LoginForm } from "@/features/auth"
 
 // ❌ Wrong (deep import)
-import { LoginForm } from '@/features/auth/ui/LoginForm';
+import { LoginForm } from "@/features/auth/ui/LoginForm"
 ```
 
 ## Segment Patterns
@@ -910,11 +933,13 @@ import { LoginForm } from '@/features/auth/ui/LoginForm';
 **Purpose:** React components and visual elements.
 
 **When to use:**
+
 - Any React component
 - UI composition
 - Visual presentation
 
 **Example:**
+
 ```typescript
 // src/entities/user/ui/UserCard.tsx
 import type { User } from '../model/types';
@@ -934,24 +959,26 @@ export function UserCard({ user }: { user: User }) {
 **Purpose:** Business logic, state management, and type definitions.
 
 **When to use:**
+
 - TypeScript interfaces and types
 - React hooks for state
 - Business logic functions
 - Data transformations
 
 **Example:**
+
 ```typescript
 // src/features/auth/model/useAuth.ts
-'use client';
+"use client"
 
-import { create } from 'zustand';
-import type { User } from '@/entities/user';
+import { create } from "zustand"
+import type { User } from "@/entities/user"
 
 interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  user: User | null
+  isAuthenticated: boolean
+  login: (user: User) => void
+  logout: () => void
 }
 
 export const useAuth = create<AuthState>((set) => ({
@@ -959,7 +986,7 @@ export const useAuth = create<AuthState>((set) => ({
   isAuthenticated: false,
   login: (user) => set({ user, isAuthenticated: true }),
   logout: () => set({ user: null, isAuthenticated: false }),
-}));
+}))
 ```
 
 ### api/ Segment
@@ -967,27 +994,29 @@ export const useAuth = create<AuthState>((set) => ({
 **Purpose:** API clients, data fetching, and external integrations.
 
 **When to use:**
+
 - HTTP requests
 - WebSocket connections
 - Third-party API integrations
 - Server actions (Next.js)
 
 **Example:**
+
 ```typescript
 // src/entities/user/api/userApi.ts
-'use server';
+"use server"
 
-import { apiClient } from '@/shared/api/client';
-import type { User } from '../model/types';
+import { apiClient } from "@/shared/api/client"
+import type { User } from "../model/types"
 
 export async function fetchUsers(): Promise<User[]> {
-  const response = await apiClient.get('/users');
-  return response.data;
+  const response = await apiClient.get("/users")
+  return response.data
 }
 
-export async function createUser(data: Omit<User, 'id'>): Promise<User> {
-  const response = await apiClient.post('/users', data);
-  return response.data;
+export async function createUser(data: Omit<User, "id">): Promise<User> {
+  const response = await apiClient.post("/users", data)
+  return response.data
 }
 ```
 
@@ -996,22 +1025,24 @@ export async function createUser(data: Omit<User, 'id'>): Promise<User> {
 **Purpose:** Utility functions and helpers specific to the slice.
 
 **When to use:**
+
 - Slice-specific utilities
 - Validation functions
 - Data transformation helpers
 
 **Example:**
+
 ```typescript
 // src/features/auth/lib/validation.ts
-import { z } from 'zod';
+import { z } from "zod"
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+})
 
 export function validateLogin(data: unknown) {
-  return loginSchema.parse(data);
+  return loginSchema.parse(data)
 }
 ```
 
@@ -1020,24 +1051,26 @@ export function validateLogin(data: unknown) {
 **Purpose:** Configuration constants and feature flags.
 
 **When to use:**
+
 - Feature-specific constants
 - Configuration objects
 - Feature flags
 
 **Example:**
+
 ```typescript
 // src/app/config/theme.ts
 export const theme = {
   colors: {
-    primary: '#0070f3',
-    secondary: '#ff4081',
+    primary: "#0070f3",
+    secondary: "#ff4081",
   },
   breakpoints: {
-    sm: '640px',
-    md: '768px',
-    lg: '1024px',
+    sm: "640px",
+    md: "768px",
+    lg: "1024px",
   },
-} as const;
+} as const
 ```
 
 ## Migration Strategy
@@ -1078,12 +1111,14 @@ export const theme = {
 ### Handling Existing Code
 
 **Incremental migration:**
+
 - Migrate one page at a time
 - Start with least complex pages
 - Use both old and new structure during transition
 - Update imports as you migrate
 
 **Testing throughout:**
+
 - Run tests after each layer migration
 - Ensure no functionality breaks
 - Verify import paths are correct
@@ -1091,16 +1126,19 @@ export const theme = {
 ## Best Practices
 
 **Keep slices isolated:**
+
 - No cross-slice imports within the same layer
 - Each slice should be independent
 - Extract shared logic to lower layers
 
 **Use Public API pattern:**
+
 - Always export through `index.ts`
 - Prevents deep imports
 - Makes refactoring easier
 
 **Colocate tests:**
+
 ```
 features/
 └── auth/
@@ -1111,15 +1149,18 @@ features/
 ```
 
 **Avoid "god slices":**
+
 - Keep slices focused on single responsibility
 - Split large slices into multiple smaller ones
 - Extract common logic to shared layer
 
 **Name by domain, not tech:**
+
 - ✅ `features/product-search`
 - ❌ `features/search-bar-component`
 
 **Use TypeScript strict mode:**
+
 ```json
 {
   "compilerOptions": {
@@ -1129,6 +1170,7 @@ features/
 ```
 
 **Document architecture decisions:**
+
 - Keep ADR (Architecture Decision Records)
 - Document why certain slices exist
 - Explain layer boundary decisions
@@ -1151,14 +1193,14 @@ import { Button } from '@/shared/ui/button';
 
 ```typescript
 // src/shared/api/client.ts
-import axios from 'axios';
+import axios from "axios"
 
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-});
+})
 
 // Usage in entity
-import { apiClient } from '@/shared/api/client';
+import { apiClient } from "@/shared/api/client"
 ```
 
 ### Form Handling with Features
@@ -1223,6 +1265,7 @@ export function DashboardView({ user }: { user: User }) {
 **Problem:** Two slices import from each other.
 
 **Solution:**
+
 1. Extract shared logic to a lower layer (usually entities or shared)
 2. Create a higher layer (widget) that imports both
 3. Review if one slice should actually be split into multiple slices
@@ -1232,6 +1275,7 @@ export function DashboardView({ user }: { user: User }) {
 **Problem:** TypeScript cannot resolve `@/` imports.
 
 **Solution:** Configure path aliases in `tsconfig.json`:
+
 ```json
 {
   "compilerOptions": {
@@ -1253,6 +1297,7 @@ export function DashboardView({ user }: { user: User }) {
 **Problem:** Next.js cannot find modules after restructuring.
 
 **Solution:**
+
 1. Clear `.next` directory: `rm -rf .next`
 2. Reinstall dependencies: `npm install`
 3. Restart dev server: `npm run dev`
@@ -1284,19 +1329,19 @@ export function DashboardView({ user }: { user: User }) {
 // .eslintrc.js
 module.exports = {
   rules: {
-    'no-restricted-imports': [
-      'error',
+    "no-restricted-imports": [
+      "error",
       {
         patterns: [
           {
-            group: ['@/views/*', '@/widgets/*'],
-            message: 'Features cannot import from views or widgets',
+            group: ["@/views/*", "@/widgets/*"],
+            message: "Features cannot import from views or widgets",
           },
         ],
       },
     ],
   },
-};
+}
 ```
 
 ## References

@@ -6,7 +6,7 @@ import { ProtectedRoute } from "./protected-route"
 
 import { PageLoader } from "@/shared/components"
 import { paths } from "@/shared/config"
-import { DashboardLayout } from "@/widgets/layouts/dashboard/dashboard-layout"
+import { DashboardLayout } from "@/widgets/dashboard-layout"
 
 const HomePage = lazy(() => import("@/pages/home/home-page"))
 
