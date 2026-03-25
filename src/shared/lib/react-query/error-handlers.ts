@@ -73,8 +73,8 @@ const refreshTokenAndRetry = async (
         responseData.refreshToken,
         responseData.expiresIn
       )
-      processFailedQueue()
       refreshAttempts = 0
+      processFailedQueue()
     } catch {
       clearRefreshState()
       tokenStorage.clearTokens()

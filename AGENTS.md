@@ -13,7 +13,9 @@
 - Run `pnpm typecheck` after structural changes to verify types
 - Run `pnpm lint` after code changes to verify linting
 
-Skills are stored in two locations (`.agents/skills/`):
+## Agents Skills
+
+Skills are stored in location (`.agents/skills/`):
 
 ```
 .agents/skills/           # Source skill definitions

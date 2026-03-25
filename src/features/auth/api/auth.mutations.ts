@@ -37,13 +37,15 @@ export const useLogoutMutation = () => {
 
   return useMutation({
     mutationFn: authApi.logout,
-    onSuccess: () => {
+    onSuccess: async () => {
       tokenStorage.clearTokens()
+      await queryClient.cancelQueries()
       queryClient.clear()
     },
-    onError: (error) => {
+    onError: async (error) => {
       console.error("Logout failed:", error)
       tokenStorage.clearTokens()
+      await queryClient.cancelQueries()
       queryClient.clear()
     },
   })

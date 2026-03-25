@@ -8,12 +8,31 @@ const REFRESH_TOKEN_KEY = "refresh_token"
 const ACCESS_TOKEN_EXPIRES_KEY = "access_token_expires_at"
 const TOKEN_SKEW_MS = 60000 // 1m
 
+type Listener = () => void
+const listeners = new Set<Listener>()
+
+const notifyListeners = () => {
+  listeners.forEach((listener) => listener())
+}
+
 export const tokenStorage = {
+  subscribe(listener: Listener): () => void {
+    listeners.add(listener)
+    return () => listeners.delete(listener)
+  },
+
+  getSnapshot(): boolean {
+    return Boolean(
+      localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY)
+    )
+  },
+
   setTokens(accessToken: string, refreshToken: string, expiresIn: number): void {
     const expiresAt = Date.now() + expiresIn * 1000
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
     localStorage.setItem(ACCESS_TOKEN_EXPIRES_KEY, expiresAt.toString())
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    notifyListeners()
   },
 
   getAccessToken(): string | null {
@@ -47,6 +66,7 @@ export const tokenStorage = {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(ACCESS_TOKEN_EXPIRES_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
+    notifyListeners()
   },
 
   hasTokens(): boolean {

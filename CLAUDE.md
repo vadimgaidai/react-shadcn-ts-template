@@ -4,11 +4,10 @@
 
 ## Claude Code Skills
 
-Skills are stored in two locations (`.claude/skills/` symlinks to `.agents/skills/`):
+Skills are stored in location (`.claude/skills/`):
 
 ```
-.agents/skills/           # Source skill definitions
-.claude/skills/           # Symlinks used by Claude Code
+.claude/skills/           # Source skill definitions
 ```
 
 Available skills:

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { useSyncExternalStore } from "react"
 
 import { useLoginMutation, useLogoutMutation, useRegisterMutation } from "../api/auth.mutations"
 
@@ -6,7 +7,7 @@ import { userQueries } from "@/entities/user"
 import { tokenStorage } from "@/shared/lib"
 
 export const useAuth = () => {
-  const hasTokens = tokenStorage.hasTokens()
+  const hasTokens = useSyncExternalStore(tokenStorage.subscribe, tokenStorage.getSnapshot)
 
   const {
     data: user,
