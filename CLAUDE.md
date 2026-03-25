@@ -285,7 +285,6 @@ Skills are stored in two locations (`.claude/skills/` symlinks to `.agents/skill
 
 Available skills:
 - `shadcn` — manage shadcn/ui components
-- `deploy-to-vercel` / `vercel-cli-with-tokens` — deploy to Vercel
 - `vercel-react-best-practices` — React/Next.js performance patterns
 - `vercel-composition-patterns` — React composition patterns
 - `web-design-guidelines` — UI/UX review
