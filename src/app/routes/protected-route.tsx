@@ -1,10 +1,10 @@
 import type { FC } from "react"
 import { Outlet } from "react-router"
 
-import { useAuth } from "@/features/auth"
+import { useAuthState } from "@/features/auth"
 
 export const ProtectedRoute: FC = () => {
-  const { isLoading } = useAuth()
+  const { isLoading } = useAuthState()
 
   if (isLoading) {
     return (

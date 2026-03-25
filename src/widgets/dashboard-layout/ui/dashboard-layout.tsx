@@ -47,23 +47,23 @@ export const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
           <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
           <Breadcrumb>
             <BreadcrumbList>
-              {currentSection && (
+              {currentSection ? (
                 <>
                   <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink href={currentSection.url}>
                       {t(currentSection.title)}
                     </BreadcrumbLink>
                   </BreadcrumbItem>
-                  {currentSubSection && (
+                  {currentSubSection ? (
                     <>
                       <BreadcrumbSeparator className="hidden md:block" />
                       <BreadcrumbItem>
                         <BreadcrumbPage>{t(currentSubSection.title)}</BreadcrumbPage>
                       </BreadcrumbItem>
                     </>
-                  )}
+                  ) : null}
                 </>
-              )}
+              ) : null}
             </BreadcrumbList>
           </Breadcrumb>
         </header>

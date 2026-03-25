@@ -1,10 +1,12 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router"
 
-import { useAuth } from "./use-auth"
+import { useAuthState } from "./use-auth-state"
 
-export const useRequireAuth = (redirectTo: string = "/login") => {
-  const { isAuthenticated, isLoading } = useAuth()
+import { paths } from "@/shared/config"
+
+export const useRequireAuth = (redirectTo: string = paths.login) => {
+  const { isAuthenticated, isLoading } = useAuthState()
   const navigate = useNavigate()
 
   useEffect(() => {
