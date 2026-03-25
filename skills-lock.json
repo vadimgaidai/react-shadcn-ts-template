@@ -1,10 +1,20 @@
 {
   "version": 1,
   "skills": {
+    "Feature-Sliced Design": {
+      "source": "constellos/claude-code-plugins",
+      "sourceType": "github",
+      "computedHash": "9d33195df71602f27a8e35daeb08525b9b46c71961334b5ddfb8c5c135606afa"
+    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
       "computedHash": "507f011a70e8b3ae242bdc0bb5b39fd91a1d4049a0f3c281991ccf84973d591c"
+    },
+    "tanstack-query-best-practices": {
+      "source": "deckardger/tanstack-agent-skills",
+      "sourceType": "github",
+      "computedHash": "21d2e8b7468a81d772b6527ad8ca178cc2f3f08af777bb9061333013ee88a0c9"
     },
     "vercel-composition-patterns": {
       "source": "vercel-labs/agent-skills",
@@ -15,11 +25,6 @@
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "computedHash": "bbc31a48537b473ff4feea6360ef0de3bfdcbef26c14f4967a5deefe8ca801d3"
-    },
-    "web-design-guidelines": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
     }
   }
 }
