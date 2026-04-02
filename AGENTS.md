@@ -38,3 +38,37 @@ Available skills:
 - `tanstack-query-best-practices` — TanStack Query data fetching and caching patterns
 - `react-hook-form-zod` — React Hook Form + Zod validation patterns
 - `figma-design-system` — Figma design token mapping and component translation rules
+
+## Custom Agents (Figma-to-Production Pipeline)
+
+Agents in `.claude/agents/` — specialized for the full design-to-code workflow:
+
+### Pipeline orchestrator
+
+- **`figma-pipeline`** — orchestrates the full Figma → Production flow (user-invocable via `/figma-pipeline`)
+
+### Stage agents
+
+| Stage | Agent | Input | Output |
+|---|---|---|---|
+| 1. ANALYZE | `figma-analyzer` | Figma URL | Implementation plan (components, tokens, FSD layers) |
+| 2. CLARIFY | `api-designer` | Endpoint list | Types, API methods, query keys, mutations design |
+| 3. SCAFFOLD | `fsd-scaffolder` | Module specs | FSD directory structure with all files |
+| 4. IMPLEMENT | `component-builder` | Component specs | UI components (shadcn, i18n, dark mode) |
+| 4b. FORMS | `form-builder` | Form specs | Zod schemas + RHF forms + Field pattern |
+| 5. INTEGRATE | `query-builder` | API design | TanStack Query layer (queries, mutations, cache) |
+| 6. REVIEW | `feature-reviewer` | All files | Convention compliance report + auto-fixes |
+
+### Pipeline flow
+
+```
+Figma URL → ANALYZE → [user confirms] → CLARIFY API → [user answers]
+  → SCAFFOLD → IMPLEMENT (+ FORMS parallel) → INTEGRATE → REVIEW
+```
+
+### User checkpoints
+
+The pipeline pauses for user confirmation at 3 points:
+1. After ANALYZE — review the implementation plan
+2. After CLARIFY — review the API design
+3. After REVIEW — review found issues before auto-fix
