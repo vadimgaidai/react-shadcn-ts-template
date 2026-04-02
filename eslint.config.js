@@ -11,7 +11,15 @@ import tseslint from "typescript-eslint"
 
 export default tseslint.config(
   {
-    ignores: ["dist", "node_modules", "*.config.*", "src/shared/ui", "commitlint.config.*"],
+    ignores: [
+      "dist",
+      "node_modules",
+      "*.config.*",
+      "src/shared/ui",
+      "commitlint.config.*",
+      ".agents",
+      ".claude",
+    ],
   },
   {
     files: ["**/*.{ts,tsx}"],

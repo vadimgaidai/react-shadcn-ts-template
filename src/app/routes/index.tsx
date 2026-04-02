@@ -16,11 +16,17 @@ export const routes: RouteObject[] = [
     children: [
       {
         element: (
-          <DashboardLayout>
-            <Suspense fallback={<PageLoader />}>
-              <Outlet />
-            </Suspense>
-          </DashboardLayout>
+          <DashboardLayout.Root>
+            <DashboardLayout.Aside />
+            <DashboardLayout.Main>
+              <DashboardLayout.Header />
+              <DashboardLayout.Content>
+                <Suspense fallback={<PageLoader />}>
+                  <Outlet />
+                </Suspense>
+              </DashboardLayout.Content>
+            </DashboardLayout.Main>
+          </DashboardLayout.Root>
         ),
         children: [
           { path: paths.home, element: <HomePage /> },

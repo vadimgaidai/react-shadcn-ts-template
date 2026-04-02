@@ -2,6 +2,8 @@ import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router"
 
+import { menuConfig } from "../../config/menu.config"
+
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -12,7 +14,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/shared/ui/sidebar"
-import { menuConfig } from "@/widgets/dashboard-layout"
 
 export const Navigation: FC = () => {
   const { t } = useTranslation()

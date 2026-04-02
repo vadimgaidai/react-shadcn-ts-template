@@ -3,6 +3,8 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router"
 
+import { menuConfig } from "../config/menu.config"
+
 import { Aside } from "./aside/aside"
 
 import {
@@ -15,13 +17,32 @@ import {
 } from "@/shared/ui/breadcrumb"
 import { Separator } from "@/shared/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/shared/ui/sidebar"
-import { menuConfig } from "@/widgets/dashboard-layout"
 
 interface DashboardLayoutProps {
   children: ReactNode
 }
 
-export const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
+interface DashboardLayoutMainProps {
+  children: ReactNode
+}
+
+interface DashboardLayoutContentProps {
+  children: ReactNode
+}
+
+const DashboardLayoutRoot: FC<DashboardLayoutProps> = ({ children }) => {
+  return <SidebarProvider>{children}</SidebarProvider>
+}
+
+const DashboardLayoutAside: FC = () => {
+  return <Aside />
+}
+
+const DashboardLayoutMain: FC<DashboardLayoutMainProps> = ({ children }) => {
+  return <SidebarInset>{children}</SidebarInset>
+}
+
+const DashboardLayoutHeader: FC = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const parentLocation = String(location.pathname.split("/").filter(Boolean)[0] ?? "")
@@ -39,36 +60,40 @@ export const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
   }, [location.pathname, parentLocation])
 
   return (
-    <SidebarProvider>
-      <Aside />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              {currentSection ? (
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+      <SidebarTrigger className="-ml-1" />
+      <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+      <Breadcrumb>
+        <BreadcrumbList>
+          {currentSection ? (
+            <>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href={currentSection.url}>{t(currentSection.title)}</BreadcrumbLink>
+              </BreadcrumbItem>
+              {currentSubSection ? (
                 <>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href={currentSection.url}>
-                      {t(currentSection.title)}
-                    </BreadcrumbLink>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{t(currentSubSection.title)}</BreadcrumbPage>
                   </BreadcrumbItem>
-                  {currentSubSection ? (
-                    <>
-                      <BreadcrumbSeparator className="hidden md:block" />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage>{t(currentSubSection.title)}</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </>
-                  ) : null}
                 </>
               ) : null}
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+            </>
+          ) : null}
+        </BreadcrumbList>
+      </Breadcrumb>
+    </header>
   )
+}
+
+const DashboardLayoutContent: FC<DashboardLayoutContentProps> = ({ children }) => {
+  return <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+}
+
+export const DashboardLayout = {
+  Root: DashboardLayoutRoot,
+  Aside: DashboardLayoutAside,
+  Main: DashboardLayoutMain,
+  Header: DashboardLayoutHeader,
+  Content: DashboardLayoutContent,
 }

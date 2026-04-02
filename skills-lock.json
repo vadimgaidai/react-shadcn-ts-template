@@ -6,6 +6,11 @@
       "sourceType": "github",
       "computedHash": "9d33195df71602f27a8e35daeb08525b9b46c71961334b5ddfb8c5c135606afa"
     },
+    "react-hook-form-zod": {
+      "source": "ovachiever/droid-tings",
+      "sourceType": "github",
+      "computedHash": "1ee0fc6e35b6b6973d6117657e644605a5646bd7e6c2d0c55f52ec073679ac65"
+    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",

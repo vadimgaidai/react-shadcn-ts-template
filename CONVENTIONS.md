@@ -170,6 +170,53 @@ src/features/auth/
 - `api/` imports shared utils via `@/shared/lib`
 - External code imports only from `index.ts` barrel
 
+## Component Patterns
+
+### Compound Component Pattern
+
+When a component has nested sub-components, use the Compound Component Pattern — export an object with `.Root` and sub-components:
+
+```typescript
+const LayoutRoot: FC<{ children: ReactNode }> = ({ children }) => {
+  return <Provider>{children}</Provider>
+}
+
+const LayoutHeader: FC = () => {
+  return <header>...</header>
+}
+
+const LayoutContent: FC<{ children: ReactNode }> = ({ children }) => {
+  return <div>{children}</div>
+}
+
+export const Layout = {
+  Root: LayoutRoot,
+  Header: LayoutHeader,
+  Content: LayoutContent,
+}
+```
+
+Usage:
+
+```tsx
+<Layout.Root>
+  <Layout.Header />
+  <Layout.Content>{children}</Layout.Content>
+</Layout.Root>
+```
+
+Rules:
+
+- Apply when a component has 2+ tightly related sub-components
+- Always expose `.Root` as the wrapper component
+- Export as a plain object with named sub-components
+- Internal sub-components (not exposed via compound) stay in separate files within the module
+- Does NOT apply to `shared/ui/` — those are managed by shadcn
+
+### Barrel Export Pattern
+
+Every module must have `index.ts` that re-exports its public API. External code imports only through barrel files. Does NOT apply to `shared/ui/` — import shadcn components directly by file path (`@/shared/ui/button`).
+
 ## Key Patterns
 
 ### HTTP Client
