@@ -13,6 +13,14 @@
 - Run `pnpm typecheck` after structural changes to verify types
 - Run `pnpm lint` after code changes to verify linting
 
+## MCP Servers
+
+Configured in `.mcp.json`:
+
+- `shadcn` — shadcn/ui CLI integration (component search, docs, add)
+- `context7` — real-time library documentation. Append "use context7" to prompts for up-to-date docs
+- `figma` — Figma design-to-code workflow (design context, screenshots, metadata)
+
 ## Agents Skills
 
 Skills are stored in location (`.agents/skills/`):
@@ -28,3 +36,5 @@ Available skills:
 - `vercel-composition-patterns` — React composition patterns
 - `feature-sliced-design` — FSD architecture methodology guidance
 - `tanstack-query-best-practices` — TanStack Query data fetching and caching patterns
+- `react-hook-form-zod` — React Hook Form + Zod validation patterns
+- `figma-design-system` — Figma design token mapping and component translation rules

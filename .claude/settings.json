@@ -1,0 +1,60 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf *)",
+      "Edit(pnpm-lock.yaml)",
+      "Edit(.git/**)",
+      "Edit(dist/**)",
+      "Edit(node_modules/**)",
+      "Bash(git commit*)",
+      "Bash(git push*)"
+    ],
+    "allow": [
+      "Bash(pnpm dev)",
+      "Bash(pnpm build)",
+      "Bash(pnpm lint*)",
+      "Bash(pnpm stylelint*)",
+      "Bash(pnpm format)",
+      "Bash(pnpm typecheck)",
+      "Bash(npx shadcn@latest *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm remove *)",
+      "mcp__shadcn__*",
+      "mcp__context7__*",
+      "mcp__figma__*"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/fsd-validator.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/kebab-case-validator.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/barrel-import-validator.sh\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"' 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
