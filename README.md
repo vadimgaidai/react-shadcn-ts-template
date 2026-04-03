@@ -93,63 +93,46 @@ Skills are knowledge bases that teach Claude Code the project's patterns, conven
 | `feature-sliced-design` | FSD methodology — layers, slices, segments, import rules |
 | `tanstack-query-best-practices` | Data fetching — query keys, caching, mutations, optimistic updates, prefetching |
 | `react-hook-form-zod` | Form validation — Zod schemas, React Hook Form integration, field arrays, multi-step |
-| `figma-design-system` | Design token mapping — Figma colors/spacing/typography to project CSS variables and Tailwind classes |
-
-Skills are activated automatically when relevant tasks are detected. For example, creating a form triggers `react-hook-form-zod` and `shadcn` skills.
+Skills are activated automatically when relevant tasks are detected, and agents load them via the `skills` field in their frontmatter. For example, `form-builder` auto-loads `react-hook-form-zod` and `shadcn`.
 
 ### Custom Agents
 
-Agents are autonomous workflows that perform multi-step tasks. Located in `.claude/agents/`.
+Agents are standalone tools that each handle one specific task. Located in `.claude/agents/`. Each agent auto-loads relevant skills via the `skills` field — no manual file reading needed.
 
 #### How to invoke agents
 
 Type `@` in the Claude Code prompt — an autocomplete menu appears. Select the entry marked with `*` (agent), not `+` (file reference):
 
 ```
-@figma-pipeline https://figma.com/design/abc123/MyApp?node-id=10:200
+@api-designer design API for product catalog
 ```
 
 Alternative — run an agent as the main session:
 
 ```bash
-claude --agent=figma-pipeline
+claude --agent=api-designer
 ```
 
-#### Figma-to-Production Pipeline
+#### Available Agents
 
-The main workflow — takes a Figma URL and produces a complete, production-ready feature:
-
-```
-Figma URL → ANALYZE → CLARIFY API → SCAFFOLD → IMPLEMENT → INTEGRATE → REVIEW
-```
-
-The pipeline pauses at 3 checkpoints for your confirmation:
-1. After **ANALYZE** — review the implementation plan
-2. After **CLARIFY** — review the API layer design
-3. After **REVIEW** — review found issues before auto-fix
-
-#### Individual Agents
-
-Each pipeline stage is also available as a standalone agent:
-
-| Agent | Color | What it does | When to use standalone |
-|-------|-------|-------------|----------------------|
-| `figma-analyzer` | purple | Reads Figma design, decomposes into components, maps to shadcn/ui, identifies FSD layers | Design analysis without implementation |
-| `api-designer` | blue | Asks clarifying questions about endpoints, designs TypeScript types, API methods, query keys | Adding a new API integration |
-| `fsd-scaffolder` | green | Creates the correct FSD module structure — folders, barrel exports, type/constant files | Creating a new entity, feature, widget, or page |
-| `component-builder` | cyan | Implements UI components using shadcn/ui, semantic tokens, compound pattern, i18n | Building a component from spec |
-| `form-builder` | yellow | Builds forms with Zod schema, React Hook Form, FieldGroup/Field pattern | Validated form with API submission |
-| `query-builder` | orange | Creates TanStack Query layer — queryOptions, mutation hooks with cache invalidation | Connecting a feature to backend |
-| `feature-reviewer` | red | Reviews code against all project conventions, runs lint + typecheck | Validating code before committing |
-| `figma-pipeline` | pink | **Orchestrator** — runs all stages above in sequence | Full Figma-to-production workflow |
+| Agent | Skills loaded | What it does | When to use |
+|-------|--------------|-------------|-------------|
+| `api-designer` | tanstack-query | Asks questions one-by-one, then designs types, API methods, query keys, mutations | Adding a new API integration |
+| `fsd-scaffolder` | feature-sliced-design | Creates FSD module structure — folders, barrel exports, type/constant files | Creating a new entity, feature, widget, or page |
+| `component-builder` | shadcn, react-best-practices, composition-patterns | Implements UI components using shadcn/ui, semantic tokens, compound pattern, i18n | Building a component from spec |
+| `form-builder` | react-hook-form-zod, shadcn, react-best-practices | Builds forms with Zod schema, React Hook Form, FieldGroup/Field pattern | Validated form with API submission |
+| `query-builder` | tanstack-query | Creates TanStack Query layer — queryOptions, mutation hooks with cache invalidation | Connecting a feature to backend |
+| `feature-reviewer` | all skills | Reviews code against all project conventions, runs lint + typecheck | Validating code before committing |
 
 **Usage examples:**
 
 ```
-@figma-analyzer https://figma.com/design/...   — analyze design without building
-@api-designer                                   — design API layer for a feature
-@fsd-scaffolder                                 — create module structure for a new entity
-@feature-reviewer                               — review recently written code
+@api-designer                — design API layer for a feature
+@fsd-scaffolder              — create module structure for a new entity
+@component-builder           — build a component from description
+@form-builder                — create a form with validation
+@query-builder               — set up TanStack Query for an entity
+@feature-reviewer            — review recently written code
 ```
 
 ### Pre-commit Hooks
@@ -178,16 +161,14 @@ These run automatically on every `Edit` and `Write` operation — no manual acti
 
 ```
 .claude/
-├── agents/               # Custom agents (autonomous workflows)
-│   ├── figma-pipeline.md
-│   ├── figma-analyzer.md
+├── agents/               # Standalone agents (invoke via @agent-name)
 │   ├── api-designer.md
 │   ├── fsd-scaffolder.md
 │   ├── component-builder.md
 │   ├── form-builder.md
 │   ├── query-builder.md
 │   └── feature-reviewer.md
-├── skills/               # Skills (knowledge bases, symlinks to .agents/skills/)
+├── skills/               # Knowledge bases (auto-loaded by agents via skills field)
 │   ├── shadcn/
 │   ├── feature-sliced-design/
 │   ├── tanstack-query-best-practices/

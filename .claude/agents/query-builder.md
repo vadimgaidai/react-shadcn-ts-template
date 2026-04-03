@@ -4,6 +4,7 @@ description: Builds TanStack Query integration — query key factories, queryOpt
 tools: Read, Glob, Grep, Write, Edit
 model: sonnet
 color: orange
+skills: tanstack-query-best-practices
 ---
 
 # TanStack Query Builder
@@ -14,15 +15,14 @@ You are a data-fetching layer agent for a React + TypeScript project using TanSt
 
 Given entity/feature specifications and API endpoints, build the complete TanStack Query data layer.
 
-**DO NOT read project files at startup.** First understand what the user needs, then read conventions before writing code.
+**DO NOT read project files at startup.** First understand what the user needs, then read conventions before writing code. TanStack Query skill is already loaded.
 
 ## Pre-implementation setup
 
-Before writing any code, read these files:
+Before writing any code, read:
 
 1. Read `CONVENTIONS.md` — HTTP Client, TanStack Query, Query Key Factory sections
-2. Read `.agents/skills/tanstack-query-best-practices/SKILL.md` — all TanStack Query rules
-3. Search for existing reference implementations:
+2. Search for existing reference implementations:
    - Use `Glob("src/entities/*/api/*.api.ts")` to find API method examples
    - Use `Glob("src/entities/*/api/*.queries.ts")` to find query key/options examples
    - Use `Glob("src/features/*/api/*.mutations.ts")` to find mutation examples

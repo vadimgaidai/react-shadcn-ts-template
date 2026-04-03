@@ -12,51 +12,43 @@ Configured in `.mcp.json`:
 
 ## Claude Code Skills
 
-Skills are stored in location (`.claude/skills/`):
+Skills in `.claude/skills/` — auto-loaded by agents via the `skills` frontmatter field:
 
-```
-.claude/skills/           # Source skill definitions
-```
-
-Available skills:
-
-- `shadcn` — manage shadcn/ui components
-- `vercel-react-best-practices` — React/Next.js performance patterns
+- `shadcn` — shadcn/ui component usage rules
+- `vercel-react-best-practices` — React performance patterns
 - `vercel-composition-patterns` — React composition patterns
-- `feature-sliced-design` — FSD architecture methodology guidance
-- `tanstack-query-best-practices` — TanStack Query data fetching and caching patterns
+- `feature-sliced-design` — FSD architecture methodology
+- `tanstack-query-best-practices` — TanStack Query data fetching and caching
 - `react-hook-form-zod` — React Hook Form + Zod validation patterns
-- `figma-design-system` — Figma design token mapping and component translation rules
 
 ## Claude Code Agents
 
-Custom agents in `.claude/agents/` for the Figma-to-Production pipeline:
+Standalone agents in `.claude/agents/` — each handles one specific task:
 
-| Agent | Purpose |
-|---|---|
-| `figma-pipeline` | **Orchestrator** — full pipeline from Figma URL to production code (user-invocable) |
-| `figma-analyzer` | Reads Figma design → structured implementation plan |
-| `api-designer` | Asks API questions → types, methods, query keys, mutations |
-| `fsd-scaffolder` | Creates FSD module structure with all files |
-| `component-builder` | Implements UI with shadcn/ui, tokens, i18n, dark mode |
-| `form-builder` | Builds forms: Zod schemas + React Hook Form + Field pattern |
-| `query-builder` | TanStack Query: queryOptions, mutations, cache invalidation |
-| `feature-reviewer` | Reviews all code against conventions, runs lint/typecheck |
+| Agent | Skills | Purpose |
+|---|---|---|
+| `api-designer` | tanstack-query | Asks questions one-by-one → designs types, API methods, query keys, mutations |
+| `fsd-scaffolder` | feature-sliced-design | Creates FSD module structure with all files |
+| `component-builder` | shadcn, react-best-practices, composition-patterns | Implements UI with shadcn/ui, tokens, i18n, dark mode |
+| `form-builder` | react-hook-form-zod, shadcn, react-best-practices | Builds forms: Zod schemas + React Hook Form + Field pattern |
+| `query-builder` | tanstack-query | TanStack Query: queryOptions, mutations, cache invalidation |
+| `feature-reviewer` | shadcn, fsd, tanstack-query, react-best-practices, composition-patterns, react-hook-form-zod | Reviews all code against conventions, runs lint/typecheck |
 
 ### Usage
 
 Type `@` in the Claude Code prompt, then select the agent marked with `*` from autocomplete:
 
 ```
-@figma-pipeline https://figma.com/design/abc123/MyApp?node-id=10:200
-@figma-analyzer — just analyze a design
-@api-designer — just design the API layer
-@fsd-scaffolder — just create module structure
-@feature-reviewer — just review existing code
+@api-designer — design the API layer
+@fsd-scaffolder — create module structure
+@component-builder — build a component
+@form-builder — create a form with validation
+@query-builder — set up TanStack Query
+@feature-reviewer — review existing code
 ```
 
 Or run an agent as the main session:
 
 ```bash
-claude --agent=figma-pipeline
+claude --agent=api-designer
 ```

@@ -4,6 +4,7 @@ description: Reviews implemented feature code against all project conventions �
 tools: Read, Glob, Grep, Edit, Bash
 model: sonnet
 color: red
+skills: shadcn, feature-sliced-design, tanstack-query-best-practices, vercel-react-best-practices, vercel-composition-patterns, react-hook-form-zod
 ---
 
 # Feature Code Reviewer
@@ -14,14 +15,13 @@ You are a code review agent for a React + TypeScript project using Feature-Slice
 
 Given a set of files (new or modified), review them against ALL project conventions and report violations.
 
-**DO NOT read convention files at startup.** First identify which files need review, then read conventions before checking.
+**DO NOT read convention files at startup.** First identify which files need review, then read conventions before checking. Skills (shadcn, FSD) are already loaded.
 
 ## Pre-review setup
 
-Before starting the review, read these files:
+Before starting the review, read:
 
 1. Read `CONVENTIONS.md` — the authoritative source for all project rules
-2. Read `.agents/skills/figma-design-system/SKILL.md` — design token and component mapping
 
 ## Review checklist
 

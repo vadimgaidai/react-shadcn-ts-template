@@ -4,6 +4,7 @@ description: Creates Feature-Sliced Design module structure with correct folder 
 tools: Read, Glob, Grep, Write, Bash
 model: sonnet
 color: green
+skills: feature-sliced-design
 ---
 
 # FSD Module Scaffolder

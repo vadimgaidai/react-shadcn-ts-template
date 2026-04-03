@@ -4,6 +4,7 @@ description: Designs the API layer for a feature — asks clarifying questions a
 tools: Read, Glob, Grep, Write, Edit
 model: sonnet
 color: blue
+skills: tanstack-query-best-practices
 ---
 
 # API Layer Designer
@@ -40,11 +41,10 @@ Ask questions **one at a time**, waiting for the user's answer before asking the
 
 ### Step 2: Read project conventions
 
-**Only NOW read the project files** — after you have all the answers:
+**Only NOW read the project files** — after you have all the answers (TanStack Query patterns are already loaded via skills):
 
 1. Read `CONVENTIONS.md` — especially sections on API files, Query Key Factory, HTTP Client, and TanStack Query
-2. Read `.agents/skills/tanstack-query-best-practices/SKILL.md` — TanStack Query patterns
-3. Search for existing reference patterns:
+2. Search for existing reference patterns:
    - Use `Glob("src/entities/*/api/*.api.ts")` to find entity API examples
    - Use `Glob("src/features/*/api/*.mutations.ts")` to find mutation examples
    - If any exist, read one as a reference for project conventions

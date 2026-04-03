@@ -21,54 +21,33 @@ Configured in `.mcp.json`:
 - `context7` — real-time library documentation. Append "use context7" to prompts for up-to-date docs
 - `figma` — Figma design-to-code workflow (design context, screenshots, metadata)
 
-## Agents Skills
+## Skills
 
-Skills are stored in location (`.agents/skills/`):
+Skills in `.claude/skills/` are auto-loaded by agents via the `skills` frontmatter field — agents do NOT need to read skill files manually.
 
-```
-.agents/skills/           # Source skill definitions
-```
-
-Available skills:
-
-- `shadcn` — manage shadcn/ui components
-- `vercel-react-best-practices` — React/Next.js performance patterns
+- `shadcn` — shadcn/ui component usage rules
+- `vercel-react-best-practices` — React performance patterns
 - `vercel-composition-patterns` — React composition patterns
-- `feature-sliced-design` — FSD architecture methodology guidance
-- `tanstack-query-best-practices` — TanStack Query data fetching and caching patterns
+- `feature-sliced-design` — FSD architecture methodology
+- `tanstack-query-best-practices` — TanStack Query data fetching and caching
 - `react-hook-form-zod` — React Hook Form + Zod validation patterns
-- `figma-design-system` — Figma design token mapping and component translation rules
 
-## Custom Agents (Figma-to-Production Pipeline)
+## Custom Agents
 
-Agents in `.claude/agents/` — specialized for the full design-to-code workflow:
+Standalone agents in `.claude/agents/` — each handles one specific task independently:
 
-### Pipeline orchestrator
+| Agent | Skills loaded | What it does |
+|---|---|---|
+| `api-designer` | tanstack-query | Conversational Q&A → designs types, API methods, query keys, mutations |
+| `fsd-scaffolder` | feature-sliced-design | Creates FSD module structure (entity, feature, widget, page) |
+| `component-builder` | shadcn, react-best-practices, composition-patterns | Implements UI components with shadcn/ui, i18n, dark mode |
+| `form-builder` | react-hook-form-zod, shadcn, react-best-practices | Builds Zod schemas + React Hook Form + FieldGroup/Field pattern |
+| `query-builder` | tanstack-query | Creates queryOptions, mutation hooks, cache invalidation |
+| `feature-reviewer` | shadcn, fsd, tanstack-query, react-best-practices, composition-patterns, react-hook-form-zod | Reviews code against all conventions, runs lint + typecheck |
 
-- **`figma-pipeline`** — orchestrates the full Figma → Production flow (user-invocable via `/figma-pipeline`)
+### Agent design principles
 
-### Stage agents
-
-| Stage | Agent | Input | Output |
-|---|---|---|---|
-| 1. ANALYZE | `figma-analyzer` | Figma URL | Implementation plan (components, tokens, FSD layers) |
-| 2. CLARIFY | `api-designer` | Endpoint list | Types, API methods, query keys, mutations design |
-| 3. SCAFFOLD | `fsd-scaffolder` | Module specs | FSD directory structure with all files |
-| 4. IMPLEMENT | `component-builder` | Component specs | UI components (shadcn, i18n, dark mode) |
-| 4b. FORMS | `form-builder` | Form specs | Zod schemas + RHF forms + Field pattern |
-| 5. INTEGRATE | `query-builder` | API design | TanStack Query layer (queries, mutations, cache) |
-| 6. REVIEW | `feature-reviewer` | All files | Convention compliance report + auto-fixes |
-
-### Pipeline flow
-
-```
-Figma URL → ANALYZE → [user confirms] → CLARIFY API → [user answers]
-  → SCAFFOLD → IMPLEMENT (+ FORMS parallel) → INTEGRATE → REVIEW
-```
-
-### User checkpoints
-
-The pipeline pauses for user confirmation at 3 points:
-1. After ANALYZE — review the implementation plan
-2. After CLARIFY — review the API design
-3. After REVIEW — review found issues before auto-fix
+- **Lazy loading** — agents don't read project files at startup. They first understand the task, then read `CONVENTIONS.md` and search for existing patterns before generating code
+- **Skills via frontmatter** — agents declare `skills: ...` in their YAML frontmatter, which auto-injects skill content into the agent's context without manual file reads
+- **Dynamic references** — agents search for existing code patterns with `Glob()` instead of hardcoding file paths, so they work even when example modules are deleted
+- **One question at a time** — conversational agents (api-designer) ask questions sequentially, not all at once
