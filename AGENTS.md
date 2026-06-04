@@ -1,17 +1,17 @@
 # AGENTS.md
 
-> **IMPORTANT:** First read `CONVENTIONS.md` in the project root — it contains all shared project conventions (architecture, code style, patterns, commands).
+> **IMPORTANT:** First read `CONVENTIONS.md` in the project root — it contains all shared project conventions. For concrete reference code per convention (entity, feature, queries, mutations, schemas, compound components, extending shadcn components, etc.) see `EXAMPLES.md`.
 
 ## Agent-Specific Rules
 
-- Always read `CONVENTIONS.md` before making any code changes
+- Always read `CONVENTIONS.md` before making any code changes; consult `EXAMPLES.md` when you need a working pattern
 - Follow FSD layer dependency rule strictly — never import upward
 - Use `@/` alias for all cross-layer imports
 - All file and folder names must be `kebab-case`
 - Every new module must have `index.ts` barrel export
 - No semicolons, double quotes, trailing commas (Prettier config)
 - Run `pnpm typecheck` after structural changes to verify types
-- Run `pnpm lint` after code changes to verify linting
+- **Do NOT run `pnpm build`, `pnpm lint`, or `pnpm stylelint`** — they are wired into Husky's pre-commit hook and CI; running them locally only burns tokens
 
 ## MCP Servers
 

@@ -2,20 +2,33 @@
 
 Shared project conventions. Referenced by both `CLAUDE.md` and `AGENTS.md`.
 
+> For concrete code examples (entity, feature, queries, mutations, schemas, compound components, extending shadcn components, etc.) see [`EXAMPLES.md`](./EXAMPLES.md).
+
 ## Project Overview
 
 React TypeScript template with Feature-Sliced Design (FSD) architecture. Uses Vite, React 19, TanStack Query, shadcn/ui, Tailwind CSS v4, i18next.
 
+## Token Discipline for AI Agents
+
+To avoid burning tokens unnecessarily:
+
+- **Do NOT run `pnpm build`** as a verification step. The pre-commit hook (Husky) already runs lint-staged + stylelint, and CI runs the full build. A local build call produces hundreds of lines of bundler output that adds nothing for an agent.
+- **Do NOT run `pnpm lint` / `pnpm stylelint`** to "check the code". They are already wired into `lint-staged` on pre-commit. If you need to verify a specific rule, read the rule rather than scan the whole project.
+- **Prefer `pnpm typecheck`** (`tsc --noEmit`) when you need explicit type validation — it is the smallest signal-per-token command.
+- Trust the hooks. They run automatically on commit; agents should not pre-run them.
+
 ## Commands
 
 - `pnpm dev` — dev server
-- `pnpm build` — typecheck + production build
-- `pnpm lint` / `pnpm lint:fix` — ESLint
-- `pnpm stylelint` / `pnpm stylelint:fix` — CSS/SCSS lint
+- `pnpm build` — typecheck + production build (CI / humans only — agents skip)
+- `pnpm lint` / `pnpm lint:fix` — ESLint (runs automatically on commit)
+- `pnpm stylelint` / `pnpm stylelint:fix` — CSS/SCSS lint (runs automatically on commit)
 - `pnpm format` — Prettier
-- `pnpm typecheck` — `tsc --noEmit`
+- `pnpm typecheck` — `tsc --noEmit` (preferred verification command for agents)
 
 ## Architecture (Feature-Sliced Design)
+
+FSD organizes the codebase by **business purpose**, not by technical type. Modules sit on layers; higher layers depend on lower layers, never the other way around.
 
 ### Layer Dependency Rule
 
@@ -23,7 +36,7 @@ React TypeScript template with Feature-Sliced Design (FSD) architecture. Uses Vi
 app → pages → widgets → features → entities → shared
 ```
 
-Higher layers import from lower layers only. Never import upward.
+Higher layers import from lower layers only. Never import upward. Never import sideways within the same layer (a feature must not import another feature; an entity must not import another entity).
 
 ### Layer Structure
 
@@ -51,7 +64,7 @@ src/
 ```
 api/          # API calls (.api.ts) and mutations (.mutations.ts)
 hooks/        # Feature hooks (use-*.ts)
-model/        # Types and business logic
+model/        # Types, business logic, validation schemas
 ui/           # Feature UI components (optional)
 index.ts      # Public API (barrel export)
 ```
@@ -98,6 +111,17 @@ Configured in `tsconfig.paths.json` and `vite.config.ts`.
 - API files: `[name].api.ts`, `[name].queries.ts`, `[name].mutations.ts`
 - Types files: `types.ts`
 - Constants: `constants.ts`
+- Schemas: `schemas.ts` (or `[name].schema.ts` for a single dominant schema)
+
+### Type Identifiers
+
+- **Interfaces** use the `I` prefix — `IUser`, `ILoginCredentials`, `IDashboardLayoutProps`.
+- **Types** (aliases, unions, `z.infer<...>`, mapped/utility derivations) use the `T` prefix — `TUserRole`, `TLoginFormValues`, `TQueryKey`.
+- The `T` prefix also applies to the type derived from an `as const` object — the value keeps its plain name (`UserRole`), the derived union becomes `TUserRole`.
+- Generic parameters keep the standard short form (`T`, `K`, `V`, `TData`, `TError`) — no extra prefix.
+- Component props: prefer `interface IFooProps` over `type TFooProps` unless you actually need a union/intersection.
+
+→ See [`EXAMPLES.md`](./EXAMPLES.md) — every snippet uses these prefixes.
 
 ### Formatting (Prettier)
 
@@ -115,7 +139,7 @@ Configured in `tsconfig.paths.json` and `vite.config.ts`.
 
 ### Barrel Exports
 
-Every module must have `index.ts` that re-exports its public API. External code imports only through barrel files.
+Every module must have `index.ts` that re-exports its public API. External code imports only through barrel files. Does NOT apply to `shared/ui/` — import shadcn components directly by file path (`@/shared/ui/button`).
 
 ## File Separation Rules
 
@@ -129,39 +153,15 @@ Contain only HTTP calls and query/mutation definitions. Types and constants must
 
 ### Model files (`model/`)
 
-Contain types, interfaces, enums, constants, zod schemas. Everything that describes the domain.
+Contain types, interfaces, const-object "enums", constants, zod schemas. Everything that describes the domain.
 
-- `types.ts` — interfaces, types, enums
+- `types.ts` — interfaces, types, derived unions
 - `constants.ts` — entity name, query key segments, other constants
 - `schemas.ts` — zod validation schemas (when needed)
 
-### Reference: Entity structure (user)
+**Rule for closed string sets:** do NOT use TypeScript `enum`. Use a `const` object + a type derived via `(typeof X)[keyof typeof X]`. Reasons: no runtime class, tree-shakes cleanly, plays well with JSON, and the type is structurally the union of literal values. → See [`EXAMPLES.md` → Typing & File Splitting](./EXAMPLES.md#typing--file-splitting).
 
-```
-src/entities/user/
-├── api/
-│   ├── user.api.ts         # { getMe: () => httpClient.get("users/me").json<User>() }
-│   └── user.queries.ts     # userKeys (createQueryKeyFactory) + userQueries (queryOptions)
-├── model/
-│   ├── types.ts            # User, UserProfile, UserRole
-│   └── constants.ts        # USER_ENTITY, USER_QUERY_KEYS
-└── index.ts                # Re-exports: userApi, userQueries, userKeys, User, UserProfile, UserRole
-```
-
-### Reference: Feature structure (auth)
-
-```
-src/features/auth/
-├── api/
-│   ├── auth.api.ts         # { login, register, refresh, logout } — direct ky calls
-│   └── auth.mutations.ts   # useLoginMutation, useRegisterMutation, useLogoutMutation
-├── hooks/
-│   ├── use-auth.ts         # useAuth — main auth hook
-│   └── use-require-auth.ts # useRequireAuth — redirect if not authenticated
-├── model/
-│   └── types.ts            # LoginCredentials, RegisterCredentials, AuthTokens
-└── index.ts                # Re-exports public API
-```
+**Rule for validation schemas:** any form / payload validation belongs in `model/schemas.ts`. Do NOT inline zod schemas inside components or API files. Derive types via `z.infer<typeof schema>` and re-export them from `types.ts` only if the inferred type is used outside the schema file.
 
 ### Import Rules Within a Module
 
@@ -174,36 +174,7 @@ src/features/auth/
 
 ### Compound Component Pattern
 
-When a component has nested sub-components, use the Compound Component Pattern — export an object with `.Root` and sub-components:
-
-```typescript
-const LayoutRoot: FC<{ children: ReactNode }> = ({ children }) => {
-  return <Provider>{children}</Provider>
-}
-
-const LayoutHeader: FC = () => {
-  return <header>...</header>
-}
-
-const LayoutContent: FC<{ children: ReactNode }> = ({ children }) => {
-  return <div>{children}</div>
-}
-
-export const Layout = {
-  Root: LayoutRoot,
-  Header: LayoutHeader,
-  Content: LayoutContent,
-}
-```
-
-Usage:
-
-```tsx
-<Layout.Root>
-  <Layout.Header />
-  <Layout.Content>{children}</Layout.Content>
-</Layout.Root>
-```
+When a component has 2+ tightly related sub-components, use the Compound Component Pattern — export an object with `.Root` and named sub-components.
 
 Rules:
 
@@ -213,9 +184,26 @@ Rules:
 - Internal sub-components (not exposed via compound) stay in separate files within the module
 - Does NOT apply to `shared/ui/` — those are managed by shadcn
 
-### Barrel Export Pattern
+→ See [`EXAMPLES.md` → Compound Component Pattern](./EXAMPLES.md#compound-component-pattern).
 
-Every module must have `index.ts` that re-exports its public API. External code imports only through barrel files. Does NOT apply to `shared/ui/` — import shadcn components directly by file path (`@/shared/ui/button`).
+### Extending Base Components (shadcn wrappers)
+
+When you wrap or extend an existing component (e.g. a styled `Button`, an `Input` with an icon, a domain-specific `Card`), **inherit the base component's props instead of redeclaring them**.
+
+Rules:
+
+- Extend the base component's prop type (`ComponentProps<typeof Button>` or the exported `ButtonProps`) and add only the new fields on top.
+- Forward `...rest` to the base component so HTML attributes (`disabled`, `aria-*`, `data-*`, `onClick`, etc.) keep working without manual plumbing.
+- Never duplicate variant props — re-export the base variants if a consumer needs them.
+- Place wrappers next to the consumer: domain wrappers go inside the relevant feature/entity/widget, not in `shared/ui/`.
+
+→ See [`EXAMPLES.md` → Extending Base Components](./EXAMPLES.md#extending-base-components).
+
+### Typing — File Splitting
+
+Keep `model/types.ts` as the single source of domain types per module. When the file grows large, split by concern (`types/user.ts`, `types/role.ts`) inside a `types/` folder and re-export from `model/index.ts` of the module. Do NOT scatter `*.types.ts` files across `api/`, `ui/`, or `hooks/` — those should import from `../model/types`.
+
+→ See [`EXAMPLES.md` → Typing & File Splitting](./EXAMPLES.md#typing--file-splitting).
 
 ## Key Patterns
 
@@ -240,32 +228,7 @@ Config in `src/shared/lib/react-query/client.ts`:
 
 Use `createQueryKeyFactory` from `@/shared/lib/react-query` for type-safe query keys. Keys are defined in `[entity].queries.ts`, constants for key segments live in `model/constants.ts`.
 
-Pattern (see `src/entities/user/` as reference):
-
-```typescript
-// model/constants.ts
-export const USER_ENTITY = "user" as const
-
-export const USER_QUERY_KEYS = {
-  ME: "me",
-} as const
-
-// api/user.queries.ts
-import { createQueryKeyFactory } from "@/shared/lib/react-query"
-import { USER_ENTITY, USER_QUERY_KEYS } from "@/entities/user/model/constants"
-
-export const userKeys = createQueryKeyFactory(USER_ENTITY, (all) => ({
-  me: () => [...all(), USER_QUERY_KEYS.ME] as const,
-}))
-
-export const userQueries = {
-  me: () =>
-    queryOptions({
-      queryKey: userKeys.me(),
-      queryFn: userApi.getMe,
-    }),
-}
-```
+→ See [`EXAMPLES.md` → Query Key Factory & TanStack Query](./EXAMPLES.md#query-key-factory--tanstack-query).
 
 ### Authentication
 

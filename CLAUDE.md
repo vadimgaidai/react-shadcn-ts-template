@@ -1,6 +1,8 @@
 # CLAUDE.md
 
-> **IMPORTANT:** First read `CONVENTIONS.md` in the project root — it contains all shared project conventions (architecture, code style, patterns, commands).
+> **IMPORTANT:** First read `CONVENTIONS.md` in the project root — it contains all shared project conventions (architecture, code style, patterns, commands). For concrete reference code per convention, see `EXAMPLES.md`.
+>
+> **Token discipline:** do NOT run `pnpm build`, `pnpm lint`, or `pnpm stylelint` as verification — they are wired into Husky's pre-commit hook and CI. Use `pnpm typecheck` if explicit type validation is needed.
 
 ## MCP Servers
 
