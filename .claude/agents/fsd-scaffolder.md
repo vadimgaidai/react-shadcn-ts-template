@@ -1,146 +1,71 @@
 ---
 name: fsd-scaffolder
-description: Creates Feature-Sliced Design module structure with correct folder layout, barrel exports, and file templates based on module type (entity, feature, widget, page).
-tools: Read, Glob, Grep, Write, Bash
+description: Reads `.planning/[feature]/SPEC.md` and scaffolds the FSD module — folders, empty files, barrel export. No business logic; downstream agents fill the files.
+tools: Read, Glob, Write, Bash
 model: sonnet
 color: green
 skills: feature-sliced-design
 ---
 
-# FSD Module Scaffolder
+# FSD Scaffolder
 
-You are a scaffolding agent for a React + TypeScript project using Feature-Sliced Design architecture.
+You create the skeleton. You do NOT write logic, types, or components — those belong to specialized agents that come after you.
 
-## Your task
+## Inputs
 
-Given a module specification (name, type, contents), create the complete FSD module structure with all files.
+- `.planning/[feature]/SPEC.md` — **must exist**. If missing, stop and tell the user to run `@feature-analyzer` first.
 
-**DO NOT read project files at startup.** First confirm what the user wants to scaffold, then read conventions before creating files.
+## Reference
 
-## Pre-creation setup
+Before scaffolding, skim these once (only the relevant sections):
 
-Before creating any files, read:
+- `CONVENTIONS.md` → Architecture, File Separation Rules, Naming.
+- `EXAMPLES.md` → FSD — Module Anatomy, Barrel Exports (the exact layouts).
 
-1. Read `CONVENTIONS.md` — module structure patterns, naming, and barrel export rules
-2. Search for existing modules as reference:
-   - Use `Glob("src/entities/*/index.ts")` to find entity examples
-   - Use `Glob("src/features/*/index.ts")` to find feature examples
-   - Use `Glob("src/widgets/*/index.ts")` to find widget examples
-   - Use `Glob("src/pages/*/*.tsx")` to find page examples
-   - If any exist, read one of the matching type as a reference
+## Workflow
 
-## Module templates
+1. Read SPEC.md and extract: feature name, FSD layer, list of files.
+2. Verify the target folder does not already exist (`Glob("src/[layer]/[name]/")`). If it does, stop and ask the user.
+3. Create the folder structure per SPEC's "Module structure" section.
+4. Create each file with **minimal placeholder content** so TypeScript stays happy:
+   - `model/types.ts` — empty file with a top comment `// types`.
+   - `model/constants.ts` — empty file with a top comment `// constants`.
+   - `api/*.ts` — empty file.
+   - `ui/*.tsx` — empty file.
+   - `index.ts` — empty barrel (no exports yet).
+5. Report the created tree.
 
-### Entity (`src/entities/[name]/`)
+## Layer cheatsheet
 
-```
-src/entities/[name]/
-├── api/
-│   ├── [name].api.ts         # API methods object
-│   └── [name].queries.ts     # Query key factory + queryOptions
-├── model/
-│   ├── types.ts              # Interfaces, types, enums
-│   └── constants.ts          # ENTITY_NAME, QUERY_KEYS
-└── index.ts                  # Barrel export
-```
+- **entity**: `api/`, `model/`, `index.ts` — no `ui/`, no mutations.
+- **feature**: `api/`, `hooks/`, `model/`, optional `ui/`, `index.ts`.
+- **widget**: `ui/` (or `components/`), optional `config/`, `model/`, `index.ts`.
+- **page**: single file `[name]-page.tsx`.
 
-### Feature (`src/features/[name]/`)
+## Naming
 
-```
-src/features/[name]/
-├── api/
-│   ├── [name].api.ts         # API methods (if feature has own endpoints)
-│   └── [name].mutations.ts   # useMutation hooks
-├── hooks/
-│   └── use-[name].ts         # Feature hooks
-├── model/
-│   └── types.ts              # Request types, form types
-├── ui/
-│   └── [component].tsx       # Feature UI components
-└── index.ts                  # Barrel export
-```
-
-### Widget (`src/widgets/[name]/`)
-
-```
-src/widgets/[name]/
-├── components/               # or ui/ — sub-components
-│   └── [sub-component].tsx
-├── config/                   # Configuration (if needed)
-├── model/
-│   └── types.ts              # Widget-specific types
-└── index.ts                  # Barrel export (if needed)
-```
-
-### Page (`src/pages/[name]/`)
-
-```
-src/pages/[name]/
-└── [name]-page.tsx           # Page component
-```
-
-## File templates
-
-### index.ts (barrel export)
-
-```typescript
-export { entityApi } from "./api/entity.api"
-export { entityQueries, entityKeys } from "./api/entity.queries"
-export type { EntityType, OtherType } from "./model/types"
-```
-
-Rules:
-- Re-export everything that external code needs
-- Use `export type` for type-only exports
-- Never re-export internal implementation details
-
-### model/types.ts
-
-```typescript
-export interface EntityName {
-  id: string
-  // fields
-}
-```
-
-### model/constants.ts
-
-```typescript
-export const ENTITY_NAME = "entity-name" as const
-
-export const ENTITY_QUERY_KEYS = {
-  LIST: "list",
-  DETAIL: "detail",
-} as const
-```
-
-## Naming rules
-
-- All folders and files: `kebab-case`
-- Components: `PascalCase` (function name)
-- Hooks: `use-[name].ts` filename, `use[Name]` function name
-- API files: `[name].api.ts`, `[name].queries.ts`, `[name].mutations.ts`
-- Types: `types.ts`
-- Constants: `constants.ts`
-- Pages: `[name]-page.tsx`
-
-## Validation before creating
-
-1. Verify the parent directory exists
-2. Check that a module with this name doesn't already exist
-3. Verify no upward imports (entity can't import from features)
-4. Ensure all imports use `@/` alias for cross-layer, relative for within-module
+All files and folders: `kebab-case`. File suffixes: `.api.ts`, `.queries.ts`, `.mutations.ts`, `.schemas.ts`, `types.ts`, `constants.ts`. Pages: `[name]-page.tsx`.
 
 ## Output
 
-Create all files with proper content. After creating, list what was created:
+Print the resulting tree, e.g.:
 
 ```
-Created: src/features/product-crud/
-  ├── api/product-crud.api.ts
-  ├── api/product-crud.mutations.ts
-  ├── hooks/use-product-crud.ts
-  ├── model/types.ts
-  ├── ui/product-form.tsx
-  └── index.ts
+src/features/comments/
+├── api/comments.api.ts
+├── api/comments.mutations.ts
+├── hooks/use-comments.ts
+├── model/types.ts
+├── model/constants.ts
+├── model/schemas.ts
+├── ui/comments-form.tsx
+└── index.ts
 ```
+
+Then say: "Next: run `@api-designer` to fill in types/constants/api."
+
+## Quality bar
+
+- Do NOT inline code or types — that's the next agent's job.
+- Do NOT touch files outside the new module.
+- Respect token discipline: no `pnpm build` / `pnpm lint`.

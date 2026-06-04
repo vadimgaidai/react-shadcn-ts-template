@@ -25,32 +25,44 @@ Skills in `.claude/skills/` — auto-loaded by agents via the `skills` frontmatt
 
 ## Claude Code Agents
 
-Standalone agents in `.claude/agents/` — each handles one specific task:
+Standalone agents in `.claude/agents/` — each step is intentionally narrow and reads a shared spec file produced by `feature-analyzer`.
+
+### Pipeline
+
+```
+feature-analyzer → fsd-scaffolder → api-designer → query-builder → form-builder? → component-builder? → feature-reviewer
+```
+
+Every agent after `feature-analyzer` reads `.planning/[feature]/SPEC.md` as its single source of truth.
+
+### Agents
 
 | Agent | Skills | Purpose |
 |---|---|---|
-| `api-designer` | tanstack-query | Asks questions one-by-one → designs types, API methods, query keys, mutations |
-| `fsd-scaffolder` | feature-sliced-design | Creates FSD module structure with all files |
-| `component-builder` | shadcn, react-best-practices, composition-patterns | Implements UI with shadcn/ui, tokens, i18n, dark mode |
-| `form-builder` | react-hook-form-zod, shadcn, react-best-practices | Builds forms: Zod schemas + React Hook Form + Field pattern |
-| `query-builder` | tanstack-query | TanStack Query: queryOptions, mutations, cache invalidation |
-| `feature-reviewer` | shadcn, fsd, tanstack-query, react-best-practices, composition-patterns, react-hook-form-zod | Reviews all code against conventions, runs lint/typecheck |
+| `feature-analyzer` | feature-sliced-design | Q&A about a new feature → writes `.planning/[feature]/SPEC.md`. No code. |
+| `fsd-scaffolder` | feature-sliced-design | Reads SPEC → creates folders + empty files + barrel. No logic. |
+| `api-designer` | tanstack-query | Fills `model/types.ts`, `model/constants.ts`, `api/[name].api.ts`. |
+| `query-builder` | tanstack-query | Adds `[name].queries.ts` (entities) / `[name].mutations.ts` (features). |
+| `form-builder` | react-hook-form-zod, shadcn, react-best-practices | Schema in `model/schemas.ts` + form component in `ui/[name]-form.tsx`. |
+| `component-builder` | shadcn, react-best-practices, composition-patterns | Non-form UI: compound components, shadcn wrappers, i18n, dark mode. |
+| `feature-reviewer` | shadcn, fsd, tanstack-query, react-best-practices, composition-patterns, react-hook-form-zod | Reviews against CLAUDE/AGENTS/CONVENTIONS/EXAMPLES + runs only `pnpm typecheck`. |
 
 ### Usage
 
-Type `@` in the Claude Code prompt, then select the agent marked with `*` from autocomplete:
+Type `@` in the Claude Code prompt, then select the agent from autocomplete:
 
 ```
-@api-designer — design the API layer
-@fsd-scaffolder — create module structure
-@component-builder — build a component
-@form-builder — create a form with validation
-@query-builder — set up TanStack Query
-@feature-reviewer — review existing code
+@feature-analyzer  — start: ask questions, write SPEC
+@fsd-scaffolder    — create module structure
+@api-designer      — design the API layer
+@query-builder     — set up TanStack Query
+@form-builder      — create a form with validation
+@component-builder — build a UI component
+@feature-reviewer  — review the feature before merge
 ```
 
 Or run an agent as the main session:
 
 ```bash
-claude --agent=api-designer
+claude --agent=feature-analyzer
 ```

@@ -34,20 +34,33 @@ Skills in `.claude/skills/` are auto-loaded by agents via the `skills` frontmatt
 
 ## Custom Agents
 
-Standalone agents in `.claude/agents/` — each handles one specific task independently:
+Standalone agents in `.claude/agents/`. The pipeline is sequential; each step is small and reads a shared spec file.
+
+### Pipeline
+
+```
+feature-analyzer → fsd-scaffolder → api-designer → query-builder → form-builder? → component-builder? → feature-reviewer
+```
+
+`feature-analyzer` writes `.planning/[feature]/SPEC.md`. Every later agent reads that file as the single source of truth — no agent depends on conversation history with the user beyond minor follow-ups.
+
+### Agents
 
 | Agent | Skills loaded | What it does |
 |---|---|---|
-| `api-designer` | tanstack-query | Conversational Q&A → designs types, API methods, query keys, mutations |
-| `fsd-scaffolder` | feature-sliced-design | Creates FSD module structure (entity, feature, widget, page) |
-| `component-builder` | shadcn, react-best-practices, composition-patterns | Implements UI components with shadcn/ui, i18n, dark mode |
-| `form-builder` | react-hook-form-zod, shadcn, react-best-practices | Builds Zod schemas + React Hook Form + FieldGroup/Field pattern |
-| `query-builder` | tanstack-query | Creates queryOptions, mutation hooks, cache invalidation |
-| `feature-reviewer` | shadcn, fsd, tanstack-query, react-best-practices, composition-patterns, react-hook-form-zod | Reviews code against all conventions, runs lint + typecheck |
+| `feature-analyzer` | feature-sliced-design | Asks targeted questions one-at-a-time → writes `.planning/[feature]/SPEC.md`. No code. |
+| `fsd-scaffolder` | feature-sliced-design | Reads SPEC → scaffolds folders + empty files + barrel. No logic. |
+| `api-designer` | tanstack-query | Fills `model/types.ts`, `model/constants.ts`, `api/[name].api.ts`. |
+| `query-builder` | tanstack-query | Adds `[name].queries.ts` (entities) or `[name].mutations.ts` (features). |
+| `form-builder` | react-hook-form-zod, shadcn, react-best-practices | Schema in `model/schemas.ts` + form component in `ui/[name]-form.tsx`. |
+| `component-builder` | shadcn, react-best-practices, composition-patterns | Non-form UI; compound + shadcn-wrapper patterns; i18n; dark mode. |
+| `feature-reviewer` | shadcn, fsd, tanstack-query, react-best-practices, composition-patterns, react-hook-form-zod | Reviews against CLAUDE/AGENTS/CONVENTIONS/EXAMPLES; runs only `pnpm typecheck`. |
 
 ### Agent design principles
 
-- **Lazy loading** — agents don't read project files at startup. They first understand the task, then read `CONVENTIONS.md` and search for existing patterns before generating code
-- **Skills via frontmatter** — agents declare `skills: ...` in their YAML frontmatter, which auto-injects skill content into the agent's context without manual file reads
-- **Dynamic references** — agents search for existing code patterns with `Glob()` instead of hardcoding file paths, so they work even when example modules are deleted
-- **One question at a time** — conversational agents (api-designer) ask questions sequentially, not all at once
+- **Lean prompts** — each agent is ~50–100 lines. Canonical code lives in `EXAMPLES.md`; agents reference it instead of duplicating snippets.
+- **Lazy loading** — agents read project files only after they know what they need (mostly the SPEC + one matching reference module via `Glob()`).
+- **Skills via frontmatter** — skills auto-inject without manual reads.
+- **SPEC as contract** — given the same SPEC.md, every agent should produce the same code.
+- **Token discipline** — never run `pnpm build`, `pnpm lint`, or `pnpm stylelint`. Husky + CI already do this. Only `pnpm typecheck` is allowed.
+- **One question per turn** — `feature-analyzer` uses `AskUserQuestion` and never asks multiple questions at once.

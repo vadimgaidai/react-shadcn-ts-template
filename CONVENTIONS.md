@@ -205,6 +205,15 @@ Keep `model/types.ts` as the single source of domain types per module. When the 
 
 → See [`EXAMPLES.md` → Typing & File Splitting](./EXAMPLES.md#typing--file-splitting).
 
+## Performance & Code Simplicity
+
+Write code that's right the first time — review can't catch what wasn't written.
+
+- **Algorithm before optimization.** Fix the data shape or the algorithm before reaching for a cache. No nested loops, no `find` inside `map`, prefer lookup maps over repeated scans.
+- **Memoize only when measurably needed.** React Compiler removes the need for reflexive `useMemo`/`useCallback`/`memo` — it does NOT remove the responsibility. If deps change every render, the cache is dead weight; drop it.
+- **No `useEffect` for derived state.** Compute it during render. Event-driven side effects go in the handler, not in an effect that watches state. Effects are for syncing with external systems only.
+- **Split early.** Extract a helper or sub-component when logic is reuse or branches
+
 ## Key Patterns
 
 ### HTTP Client
