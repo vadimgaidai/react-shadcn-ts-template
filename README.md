@@ -1,5 +1,20 @@
 # React TypeScript FSD Template
 
+![React 19](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite 8](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Tailwind v4](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-new--york-000000?style=flat-square&logo=shadcnui&logoColor=white)
+![TanStack Query](https://img.shields.io/badge/TanStack_Query-v5-FF4154?style=flat-square&logo=reactquery&logoColor=white)
+![FSD](https://img.shields.io/badge/Architecture-FSD-1E40AF?style=flat-square)
+![License: MIT](https://img.shields.io/badge/License-MIT-22C55E?style=flat-square)
+
+![Claude Code](https://img.shields.io/badge/Claude_Code-7_agents-D77757?style=flat-square&logo=anthropic&logoColor=white)
+![Skills](https://img.shields.io/badge/Skills-6_auto--loaded-D77757?style=flat-square)
+![MCP](https://img.shields.io/badge/MCP-3_servers-8A4DFF?style=flat-square)
+![AGENTS.md](https://img.shields.io/badge/AGENTS.md-spec-2563EB?style=flat-square)
+![LLM-ready](https://img.shields.io/badge/LLM--ready-CONVENTIONS_%2B_EXAMPLES-0EA5E9?style=flat-square)
+
 Production-ready React template with [Feature-Sliced Design](https://feature-sliced.design/) and a seven-agent Claude Code pipeline that turns a one-line feature request into reviewed code.
 
 ## Quick Start
